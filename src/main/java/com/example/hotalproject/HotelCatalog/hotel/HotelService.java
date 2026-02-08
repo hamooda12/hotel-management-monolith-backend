@@ -1,10 +1,9 @@
 package com.example.hotalproject.HotelCatalog.hotel;
 
-public interface HotelService {
-    Hotel createHotel(Hotel hotel);
-    Hotel getHotelById(Long id);
-    Hotel updateHotel(Long id, Hotel hotel);
-    Hotel deleteHotel(Long id);
+import com.example.hotalproject.HotelCatalog.Utility.CrudService;
+
+public interface HotelService extends CrudService<Hotel, Long> {
+
     Hotel replaceHotel(Long id, Hotel hotel);
     Hotel getHotelByName(String name);
     Hotel getHotelByLocation(String location);
