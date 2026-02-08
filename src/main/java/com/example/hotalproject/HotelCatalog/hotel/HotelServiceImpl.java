@@ -2,25 +2,6 @@ package com.example.hotalproject.HotelCatalog.hotel;
 
 public class HotelServiceImpl implements HotelService {
 
-    @Override
-    public Hotel createHotel(Hotel hotel) {
-        return null;
-    }
-
-    @Override
-    public Hotel getHotelById(Long id) {
-        return null;
-    }
-
-    @Override
-    public Hotel updateHotel(Long id, Hotel hotel) {
-        return null;
-    }
-
-    @Override
-    public Hotel deleteHotel(Long id) {
-        return null;
-    }
 
     @Override
     public Hotel replaceHotel(Long id, Hotel hotel) {
@@ -70,5 +51,25 @@ public class HotelServiceImpl implements HotelService {
     @Override
     public Hotel replaceRoomTypeInHotel(Long hotelId, Long oldRoomTypeId, Long newRoomTypeId) {
         return null;
+    }
+
+    @Override
+    public Hotel create(Hotel body) {
+        return null;
+    }
+
+    @Override
+    public Hotel getById(Long aLong) {
+        return null;
+    }
+
+    @Override
+    public Hotel update(Long aLong, Hotel body) {
+        return null;
+    }
+
+    @Override
+    public void delete(Long aLong) {
+
     }
 }
