@@ -1,30 +1,35 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoomTypeRequestDto {
-    @NotBlank
-    private Long id;
 
-    public Long getId() {
-        return id;
-    }
+    @NotNull(message = "Hotel ID is required")
+    private Long hotelId;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-
-    @NotBlank
+    @NotBlank(message = "Room type name is required")
     private String name;
 
-    public String getName() {
-        return name;
-    }
+    @Min(value = 1, message = "Capacity must be at least 1")
+    private int capacity;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    @NotNull(message = "Base price is required")
+    @DecimalMin(value = "0.01", message = "Base price must be greater than 0")
+    private BigDecimal basePrice;
 
+    private String amenities;
+
+    @Min(value = 1, message = "Total rooms must be at least 1")
+    private int totalRooms;
 }
+

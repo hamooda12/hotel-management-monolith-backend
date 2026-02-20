@@ -1,68 +1,59 @@
 package com.example.hotalproject.HotelCatalog.roomType;
-
-import com.example.hotalproject.HotelCatalog.room.Room;
+import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
+import com.example.hotalproject.HotelCatalog.hotel.Hotel;
+import com.example.hotalproject.HotelCatalog.hotel.HotelRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public class RoomTypeServiceImpl implements  RoomTypeService {
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class RoomTypeServiceImpl {
 
-    @Override
-    public RoomType createRoomType(RoomType roomType) {
-        return null;
+    private final RoomTypeRepository roomTypeRepository;
+    private final HotelRepository hotelRepository;
+    private final RoomTypeMapper roomTypeMapper;
+
+    @Transactional
+    public RoomTypeResponseDto createRoomType(RoomTypeRequestDto request) {
+        Hotel hotel = hotelRepository.findById(request.getHotelId())
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel", request.getHotelId()));
+        RoomType roomType = roomTypeMapper.toEntity(request, hotel);
+        roomType = roomTypeRepository.save(roomType);
+        return roomTypeMapper.toResponse(roomType);
     }
 
-    @Override
-    public RoomType getRoomTypeById(Long id) {
-        return null;
+    @Transactional
+    public RoomTypeResponseDto updateRoomType(Long id, RoomTypeRequestDto request) {
+        RoomType roomType = roomTypeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("RoomType", id));
+        roomTypeMapper.updateEntity(roomType, request);
+        roomType = roomTypeRepository.save(roomType);
+        return roomTypeMapper.toResponse(roomType);
     }
 
-    @Override
-    public RoomType updateRoomType(Long id, RoomType roomType) {
-        return null;
+    public RoomTypeResponseDto getRoomType(Long id) {
+        RoomType roomType = roomTypeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("RoomType", id));
+        return roomTypeMapper.toResponse(roomType);
     }
 
-    @Override
-    public RoomType deleteRoomType(Long id) {
-        return null;
+    public List<RoomTypeResponseDto> getRoomTypesByHotel(Long hotelId) {
+        return roomTypeRepository.findByHotelId(hotelId)
+                .stream()
+                .map(roomTypeMapper::toResponse)
+                .toList();
     }
 
-    @Override
-    public RoomType getRoomTypeByName(String name) {
-        return null;
-    }
-
-    @Override
-    public List<RoomType> getRoomTypeByHotelId(Long hotelId) {
-        return List.of();
-    }
-
-    @Override
-    public RoomType getRoomTypeByHotelIdAndName(Long hotelId, String name) {
-        return null;
-    }
-
-    @Override
-    public RoomType replaceRoomType(Long id, RoomType roomType) {
-        return null;
-    }
-
-    @Override
-    public RoomType addRoomToRoomType(Long roomTypeId, Room room) {
-        return null;
-    }
-
-    @Override
-    public RoomType removeRoomFromRoomType(Long roomTypeId, Long roomId) {
-        return null;
-    }
-
-    @Override
-    public RoomType replaceRoomInRoomType(Long roomTypeId, Long oldRoomId, Long newRoomId) {
-        return null;
-    }
-
-    @Override
-    public List<RoomType> getAllRoomTypes() {
-        return List.of();
+    @Transactional
+    public void deleteRoomType(Long id) {
+        if (!roomTypeRepository.existsById(id)) {
+            throw new ResourceNotFoundException("RoomType", id);
+        }
+        roomTypeRepository.deleteById(id);
     }
 }
+
