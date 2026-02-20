@@ -3,6 +3,7 @@ package com.example.hotalproject;
 
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.*;
 
+import com.example.hotalproject.HotelCatalog.roomType.BusinessValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +58,21 @@ public class GlobalExceptionHandler {
                 ,
                 request.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+    @ExceptionHandler(BusinessValidationException.class)
+    public ResponseEntity<ApiError> ValidationError(
+            BusinessValidationException ex,
+            HttpServletRequest request
+    ){
+        ApiError body = new ApiError(
+                Instant.now().toString(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
 
