@@ -1,121 +1,44 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 
 import com.example.hotalproject.HotelCatalog.hotel.Hotel;
-import com.example.hotalproject.HotelCatalog.room.Room;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 
-import java.util.List;
+import java.math.BigDecimal;
+
 @Entity
+@Table(name = "room_types")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RoomType {
 
-    @Id @GeneratedValue
-    private long id;
-    private String name;
-    //
-    @ManyToOne
-    @JoinColumn(name = "hotel_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
-    //
-    private int capacityAdults;
-    private int capacityChildren;
-    private int maxGuests;
-    private Double basePrice;
-    private int totalInventory;
-    private String amenities; // خليها String هسا (مثلاً "WiFi,AC,Breakfast")
-    //
-    @OneToMany(mappedBy = "roomType")
-    private List<Room> rooms;
 
-    public RoomType(long id, List<Room> rooms, String amenities, int totalInventory, int maxGuests, Double basePrice, int capacityChildren, int capacityAdults, Hotel hotel, String name) {
-        this.id = id;
-        this.rooms = rooms;
-        this.amenities = amenities;
-        this.totalInventory = totalInventory;
-        this.maxGuests = maxGuests;
-        this.basePrice = basePrice;
-        this.capacityChildren = capacityChildren;
-        this.capacityAdults = capacityAdults;
-        this.hotel = hotel;
-        this.name = name;
-    }
+    @Column(nullable = false)
+    private String name;
 
-    public RoomType() {
+    @Column(nullable = false)
+    private int capacity;
 
-    }
-//
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal basePrice;
 
-    public long getId() {
-        return id;
-    }
+    @Column(length = 1000)
+    private String amenities;
 
-    public void setId(long id) {
-        this.id = id;
-    }
+    @Column(nullable = false)
+    private int totalRooms;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getCapacityAdults() {
-        return capacityAdults;
-    }
-
-    public void setCapacityAdults(int capacityAdults) {
-        this.capacityAdults = capacityAdults;
-    }
-
-    public Hotel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
-    }
-
-    public int getCapacityChildren() {
-        return capacityChildren;
-    }
-
-    public void setCapacityChildren(int capacityChildren) {
-        this.capacityChildren = capacityChildren;
-    }
-
-    public Double getBasePrice() {
-        return basePrice;
-    }
-
-    public void setBasePrice(Double basePrice) {
-        this.basePrice = basePrice;
-    }
-
-    public int getMaxGuests() {
-        return maxGuests;
-    }
-
-    public void setMaxGuests(int maxGuests) {
-        this.maxGuests = maxGuests;
-    }
-
-    public int getTotalInventory() {
-        return totalInventory;
-    }
-
-    public void setTotalInventory(int totalInventory) {
-        this.totalInventory = totalInventory;
-    }
-
-    public String getAmenities() {
-        return amenities;
-    }
-
-    public void setAmenities(String amenities) {
-        this.amenities = amenities;
-    }
-
+    @Version
+    private Long version;
 }
+

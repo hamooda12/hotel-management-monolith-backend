@@ -1,75 +1,69 @@
 package com.example.hotalproject.HotelCatalog.hotel;
 
-public class HotelServiceImpl implements HotelService {
+import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
+import com.example.hotalproject.HotelCatalog.roomType.RoomTypeMapper;
+import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
+import com.example.hotalproject.HotelCatalog.roomType.RoomTypeResponseDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
 
-    @Override
-    public Hotel replaceHotel(Long id, Hotel hotel) {
-        return null;
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class HotelServiceImpl {
+
+    private final HotelRepository hotelRepository;
+    private final RoomTypeRepository roomTypeRepository;
+    private final HotelMapper hotelMapper;
+    private final RoomTypeMapper roomTypeMapper;
+
+    @Transactional
+    public HotelResponseDto createHotel(HotelRequestDto request) {
+        Hotel hotel = hotelMapper.toEntity(request);
+        hotel = hotelRepository.save(hotel);
+        return hotelMapper.toResponse(hotel);
     }
 
-    @Override
-    public Hotel getHotelByName(String name) {
-        return null;
+    @Transactional
+    public HotelResponseDto updateHotel(Long id, HotelRequestDto request) {
+        Hotel hotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel", id));
+        hotelMapper.updateEntity(hotel, request);
+        hotel = hotelRepository.save(hotel);
+        return hotelMapper.toResponse(hotel);
     }
 
-    @Override
-    public Hotel getHotelByLocation(String location) {
-        return null;
+    public HotelResponseDto getHotel(Long id) {
+        Hotel hotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel", id));
+        List<RoomTypeResponseDto> roomTypes = roomTypeRepository.findByHotelId(id)
+                .stream()
+                .map(roomTypeMapper::toResponse)
+                .toList();
+        return hotelMapper.toResponse(hotel, roomTypes);
     }
 
-    @Override
-    public Hotel getHotelByRating(Double rating) {
-        return null;
+    @Transactional
+    public void deleteHotel(Long id) {
+        if (!hotelRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Hotel", id);
+        }
+        hotelRepository.deleteById(id);
     }
 
-    @Override
-    public Hotel getHotelByPrice(Double price) {
-        return null;
-    }
-
-    @Override
-    public Hotel getHotelByRoomType(String roomType) {
-        return null;
-    }
-
-    @Override
-    public Hotel getAllHotels() {
-        return null;
-    }
-
-    @Override
-    public Hotel addRoomTypeToHotel(Long hotelId, Long roomTypeId) {
-        return null;
-    }
-
-    @Override
-    public Hotel removeRoomTypeFromHotel(Long hotelId, Long roomTypeId) {
-        return null;
-    }
-
-    @Override
-    public Hotel replaceRoomTypeInHotel(Long hotelId, Long oldRoomTypeId, Long newRoomTypeId) {
-        return null;
-    }
-
-    @Override
-    public Hotel create(Hotel body) {
-        return null;
-    }
-
-    @Override
-    public Hotel getById(Long aLong) {
-        return null;
-    }
-
-    @Override
-    public Hotel update(Long aLong, Hotel body) {
-        return null;
-    }
-
-    @Override
-    public void delete(Long aLong) {
-
+    public Page<HotelResponseDto> browseHotels(String city, String nameContains,
+                                            Integer minCapacity,
+                                            BigDecimal minPrice, BigDecimal maxPrice,
+                                            Pageable pageable) {
+        return hotelRepository.findWithFilters(city, nameContains, minCapacity,
+                        minPrice, maxPrice, pageable)
+                .map(hotelMapper::toResponse);
     }
 }
+
