@@ -1,7 +1,5 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 
-import com.example.hotalproject.HotelCatalog.room.Room;
-
 import java.util.List;
 
 public interface RoomTypeService {
@@ -13,7 +11,6 @@ public interface RoomTypeService {
         List<RoomType> getRoomTypeByHotelId(Long hotelId);
         RoomType getRoomTypeByHotelIdAndName(Long hotelId, String name);
         RoomType replaceRoomType(Long id, RoomType roomType);
-        RoomType addRoomToRoomType(Long roomTypeId, Room room);
         RoomType removeRoomFromRoomType(Long roomTypeId, Long roomId);
         RoomType replaceRoomInRoomType(Long roomTypeId, Long oldRoomId, Long newRoomId);
         List<RoomType> getAllRoomTypes();

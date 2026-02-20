@@ -1,44 +1,47 @@
 package com.example.hotalproject.HotelCatalog.hotel;
 
+import com.example.hotalproject.HotelCatalog.roomType.RoomTypeResponseDto;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
 public class HotelMapper {
 
-    private HotelMapper() {}
-
-    // تحويل من DTO إلى Entity
-    public static Hotel toEntity(HotelRequestDto dto) {
-        Hotel hotel = new Hotel();
-        hotel.setName(dto.getName());
-        hotel.setAddress(dto.getAddress());
-        hotel.setCity(dto.getCity());
-        hotel.setCountry(dto.getCountry());
-        hotel.setRating(dto.getRating());
-        hotel.setPhoneNumber(dto.getPhoneNumber());
-        hotel.setDescription(dto.getDescription());
-        return hotel;
+    public Hotel toEntity(HotelRequestDto request) {
+        return Hotel.builder()
+                .name(request.getName())
+                .city(request.getCity())
+                .address(request.getAddress())
+                .description(request.getDescription())
+                .managerEmail(request.getManagerEmail())
+                .build();
     }
 
-    // تحديث Entity موجود من DTO
-    public static void updateEntity(Hotel hotel, HotelRequestDto dto) {
-        hotel.setName(dto.getName());
-        hotel.setAddress(dto.getAddress());
-        hotel.setCity(dto.getCity());
-        hotel.setCountry(dto.getCountry());
-        hotel.setRating(dto.getRating());
-        hotel.setPhoneNumber(dto.getPhoneNumber());
-        hotel.setDescription(dto.getDescription());
+    public void updateEntity(Hotel hotel, HotelRequestDto request) {
+        hotel.setName(request.getName());
+        hotel.setCity(request.getCity());
+        hotel.setAddress(request.getAddress());
+        hotel.setDescription(request.getDescription());
+        hotel.setManagerEmail(request.getManagerEmail());
     }
 
-    // تحويل من Entity إلى Response DTO
-    public static HotelResponseDto toDto(Hotel hotel) {
-        return new HotelResponseDto(
-                hotel.getId(),
-                hotel.getName(),
-                hotel.getAddress(),
-                hotel.getCity(),
-                hotel.getCountry(),
-                hotel.getRating(),
-                hotel.getPhoneNumber(),
-                hotel.getDescription()
-        );
+    public HotelResponseDto toResponse(Hotel hotel) {
+        return toResponse(hotel, null);
+    }
+
+    public HotelResponseDto toResponse(Hotel hotel, List<RoomTypeResponseDto> roomTypes) {
+        return HotelResponseDto.builder()
+                .id(hotel.getId())
+                .name(hotel.getName())
+                .city(hotel.getCity())
+                .address(hotel.getAddress())
+                .description(hotel.getDescription())
+                .managerEmail(hotel.getManagerEmail())
+                .createdAt(hotel.getCreatedAt())
+                .updatedAt(hotel.getUpdatedAt())
+                .roomTypes(roomTypes)
+                .build();
     }
 }
+
