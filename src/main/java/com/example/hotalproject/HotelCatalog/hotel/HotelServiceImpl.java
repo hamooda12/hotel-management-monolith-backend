@@ -63,14 +63,14 @@ public class HotelServiceImpl {
         Specification<Hotel> spec = null;
 
         if (nameContains != null && !nameContains.isBlank()) {
-            spec=HotelSpecifications.CraciteriaContains(nameContains);
+            spec=HotelSpecifications.nameContains(nameContains);
         }
         if(city!=null && !city.isBlank()) {
-            Specification<Hotel>spc=HotelSpecifications.CraciteriaContains(city);
+            Specification<Hotel>spc=HotelSpecifications.cityContains(city);
             spec=spec==null?spc:spec.and(spc);
         }
         if(description!=null && !description.isBlank()) {
-            Specification<Hotel>spc=HotelSpecifications.CraciteriaContains(city);
+            Specification<Hotel>spc=HotelSpecifications.descriptionContains(description);
             spec=spec==null?spc:spec.and(spc);
         }
         if(after!=null||before!=null) {
