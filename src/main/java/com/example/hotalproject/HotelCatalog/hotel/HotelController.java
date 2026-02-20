@@ -1,18 +1,27 @@
 package com.example.hotalproject.HotelCatalog.hotel;
 
 
+
+import com.example.hotalproject.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/hotels")
@@ -50,15 +59,41 @@ public class HotelController {
 
     @GetMapping
     @Operation(summary = "Browse hotels with filters and pagination")
-    public ResponseEntity<Page<HotelResponseDto>> browseHotels(
+    public ResponseEntity<PagedResponse<HotelResponseDto>> browseHotels(
+            @PageableDefault(size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "id", direction = Sort.Direction.DESC)
+            })
+            Pageable pageable,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String nameContains,
-            @RequestParam(required = false) Integer minCapacity,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(hotelService.browseHotels(city, nameContains,
-                minCapacity, minPrice, maxPrice, pageable));
+            @RequestParam(required = false) LocalDate before,
+            @RequestParam(required = false) LocalDate after,
+            @RequestParam(required = false) String description,
+   HttpServletRequest request
+    ) {
+
+        Set<String> ALLOWED_PARAMS = Set.of(
+                "page", "size", "sort",
+                "city", "nameContains",
+                "before", "after",
+                "description"
+        );
+        for (String paramName : request.getParameterMap().keySet()) {
+            if (!ALLOWED_PARAMS.contains(paramName)) {
+                throw new com.example.hotalproject.HotelCatalog.roomType.BusinessValidationException("Query parameter '" + paramName + "' is not allowed");
+            }
+        }
+        LinkedList<String> ALLOWED = new LinkedList<>();
+        ALLOWED.addAll(Arrays.asList("city", "name", "description","createdAt","address"));
+
+        for (var order : pageable.getSort()) {
+            if (!ALLOWED.contains(order.getProperty())) {
+                throw new BusinessValidationException(
+                        "Sorting by '" + order.getProperty() + "' is not allowed"
+                );
+            }}
+        return ResponseEntity.ok(hotelService.listHotels(pageable,nameContains,city,description, before,after));
     }
 }
 

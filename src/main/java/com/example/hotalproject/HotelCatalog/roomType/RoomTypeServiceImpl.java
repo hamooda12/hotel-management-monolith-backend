@@ -1,11 +1,15 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
-import com.example.hotalproject.HotelCatalog.hotel.Hotel;
-import com.example.hotalproject.HotelCatalog.hotel.HotelRepository;
+import com.example.hotalproject.HotelCatalog.hotel.*;
+import com.example.hotalproject.PagedResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -21,30 +25,30 @@ public class RoomTypeServiceImpl {
     public RoomTypeResponseDto createRoomType(RoomTypeRequestDto request) {
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel", request.getHotelId()));
-        RoomType roomType = roomTypeMapper.toEntity(request, hotel);
+        RoomType roomType = RoomTypeMapper.toEntity(request, hotel);
         roomType = roomTypeRepository.save(roomType);
-        return roomTypeMapper.toResponse(roomType);
+        return RoomTypeMapper.toResponse(roomType);
     }
 
     @Transactional
     public RoomTypeResponseDto updateRoomType(Long id, RoomTypeRequestDto request) {
         RoomType roomType = roomTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RoomType", id));
-        roomTypeMapper.updateEntity(roomType, request);
+        RoomTypeMapper.updateEntity(roomType, request);
         roomType = roomTypeRepository.save(roomType);
-        return roomTypeMapper.toResponse(roomType);
+        return RoomTypeMapper.toResponse(roomType);
     }
 
     public RoomTypeResponseDto getRoomType(Long id) {
         RoomType roomType = roomTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RoomType", id));
-        return roomTypeMapper.toResponse(roomType);
+        return RoomTypeMapper.toResponse(roomType);
     }
 
     public List<RoomTypeResponseDto> getRoomTypesByHotel(Long hotelId) {
         return roomTypeRepository.findByHotelId(hotelId)
                 .stream()
-                .map(roomTypeMapper::toResponse)
+                .map(RoomTypeMapper::toResponse)
                 .toList();
     }
 
@@ -54,6 +58,38 @@ public class RoomTypeServiceImpl {
             throw new ResourceNotFoundException("RoomType", id);
         }
         roomTypeRepository.deleteById(id);
+    }
+    public PagedResponse<RoomTypeResponseDto> listRoomType(Pageable pageable, String nameContains, String amenities,Integer mincapacity,Integer maxcapacity,Integer mintotalrooms,Integer maxtotalrooms,Integer minsalary,Integer maxsalary) {
+        Specification<RoomType> spec = null;
+
+        if (nameContains != null && !nameContains.isBlank()) {
+            spec= RoomTypeSpecifications.nameContains(nameContains);
+        }
+        if(amenities!=null && !amenities.isBlank()) {
+            Specification<RoomType>spc=RoomTypeSpecifications.amenitiesContains(amenities);
+            spec=spec==null?spc:spec.and(spc);
+        }
+        if(mincapacity!=null || maxcapacity!=null) {
+            Specification<RoomType> capacityBetweenSpec = RoomTypeSpecifications.capacityBetween(mincapacity,maxcapacity);
+            spec = (spec == null) ? capacityBetweenSpec : spec.and(capacityBetweenSpec);
+        }
+        if(mintotalrooms!=null || maxtotalrooms!=null) {
+            Specification<RoomType> totalroomBetweenSpec = RoomTypeSpecifications.totalroomsBetween(mintotalrooms,maxtotalrooms);
+            spec = (spec == null) ? totalroomBetweenSpec : spec.and(totalroomBetweenSpec);
+        }
+        if(minsalary!=null || maxsalary!=null) {
+            Specification<RoomType> salaryBetweenSpec = RoomTypeSpecifications.SalaryBetween(minsalary,maxsalary);
+            spec = (spec == null) ? salaryBetweenSpec : spec.and(salaryBetweenSpec);
+        }
+
+        Page<RoomType> page = roomTypeRepository.findAll(spec, pageable);
+        List<RoomTypeResponseDto> content = page.getContent()
+                .stream()
+                .map(RoomTypeMapper::toResponse)
+                .toList();
+        return PagedResponse.from(page, content);
+
+
     }
 }
 

@@ -1,14 +1,25 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 
+import com.example.hotalproject.HotelCatalog.hotel.HotelResponseDto;
+import com.example.hotalproject.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/room-types")
@@ -17,6 +28,50 @@ import java.util.List;
 public class RoomTypeController {
 
     private final RoomTypeServiceImpl roomTypeService;
+    @GetMapping
+    @Operation(summary = "Browse RoomsType with filters and pagination")
+    public ResponseEntity<PagedResponse<RoomTypeResponseDto>> browseroomtype(
+            @PageableDefault(size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "id", direction = Sort.Direction.DESC)
+            })
+            Pageable pageable,
+            @RequestParam(required = false) String aminities,
+            @RequestParam(required = false) String nameContains,
+            @RequestParam(required = false) Integer mincapacity,
+            @RequestParam(required = false) Integer maxcapacity,
+            @RequestParam(required = false) Integer mintotalroom,
+            @RequestParam(required = false) Integer maxtotalroom,
+            @RequestParam(required = false) Integer minprice,
+            @RequestParam(required = false) Integer maxprice,
+      HttpServletRequest request
+    ) {
+
+        Set<String> ALLOWED_PARAMS = Set.of(
+                "page", "size", "sort",
+                "aminities", "nameContains",
+                "mincapacity", "maxcapacity",
+                "mintotalroom", "maxtotalroom",
+                "minprice", "maxprice"
+        );
+        for (String paramName : request.getParameterMap().keySet()) {
+            if (!ALLOWED_PARAMS.contains(paramName)) {
+                throw new BusinessValidationException("Query parameter '" + paramName + "' is not allowed");
+            }
+        }
+        LinkedList<String> ALLOWED = new LinkedList<>();
+        ALLOWED.addAll(Arrays.asList("aminities", "basePrice", "totalRooms","name", "capacity","hotel","id"));
+
+        for (var order : pageable.getSort()) {
+            if (!ALLOWED.contains(order.getProperty())) {
+                throw new BusinessValidationException(
+                        "Sorting by '" + order.getProperty() + "' is not allowed"
+                );
+            }}
+
+
+        return ResponseEntity.ok(roomTypeService.listRoomType(pageable,nameContains,aminities,mincapacity,maxcapacity,mintotalroom,maxtotalroom,minprice,maxprice));
+    }
 
     @PostMapping
     @Operation(summary = "Create a new room type")
