@@ -4,13 +4,16 @@ import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFound
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeMapper;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeResponseDto;
+import com.example.hotalproject.PagedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -20,23 +23,22 @@ public class HotelServiceImpl {
 
     private final HotelRepository hotelRepository;
     private final RoomTypeRepository roomTypeRepository;
-    private final HotelMapper hotelMapper;
-    private final RoomTypeMapper roomTypeMapper;
+
 
     @Transactional
     public HotelResponseDto createHotel(HotelRequestDto request) {
-        Hotel hotel = hotelMapper.toEntity(request);
+        Hotel hotel = HotelMapper.toEntity(request);
         hotel = hotelRepository.save(hotel);
-        return hotelMapper.toResponse(hotel);
+        return HotelMapper.toResponse(hotel);
     }
 
     @Transactional
     public HotelResponseDto updateHotel(Long id, HotelRequestDto request) {
         Hotel hotel = hotelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel", id));
-        hotelMapper.updateEntity(hotel, request);
+        HotelMapper.updateEntity(hotel, request);
         hotel = hotelRepository.save(hotel);
-        return hotelMapper.toResponse(hotel);
+        return HotelMapper.toResponse(hotel);
     }
 
     public HotelResponseDto getHotel(Long id) {
@@ -44,9 +46,9 @@ public class HotelServiceImpl {
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel", id));
         List<RoomTypeResponseDto> roomTypes = roomTypeRepository.findByHotelId(id)
                 .stream()
-                .map(roomTypeMapper::toResponse)
+                .map(RoomTypeMapper::toResponse)
                 .toList();
-        return hotelMapper.toResponse(hotel, roomTypes);
+        return HotelMapper.toResponse(hotel, roomTypes);
     }
 
     @Transactional
@@ -57,13 +59,32 @@ public class HotelServiceImpl {
         hotelRepository.deleteById(id);
     }
 
-    public Page<HotelResponseDto> browseHotels(String city, String nameContains,
-                                            Integer minCapacity,
-                                            BigDecimal minPrice, BigDecimal maxPrice,
-                                            Pageable pageable) {
-        return hotelRepository.findWithFilters(city, nameContains, minCapacity,
-                        minPrice, maxPrice, pageable)
-                .map(hotelMapper::toResponse);
+    public PagedResponse<HotelResponseDto> listHotels(Pageable pageable,String nameContains,String city,String description,LocalDate before,LocalDate after) {
+        Specification<Hotel> spec = null;
+
+        if (nameContains != null && !nameContains.isBlank()) {
+            spec=HotelSpecifications.CraciteriaContains(nameContains);
+        }
+        if(city!=null && !city.isBlank()) {
+            Specification<Hotel>spc=HotelSpecifications.CraciteriaContains(city);
+            spec=spec==null?spc:spec.and(spc);
+        }
+        if(description!=null && !description.isBlank()) {
+            Specification<Hotel>spc=HotelSpecifications.CraciteriaContains(city);
+            spec=spec==null?spc:spec.and(spc);
+        }
+        if(after!=null||before!=null) {
+            Specification<Hotel> hiredate =HotelSpecifications.CriatedDateBetween(after,before);
+            spec=(spec==null)?hiredate:spec.and(hiredate);
+        }
+        Page<Hotel> page = hotelRepository.findAll(spec, pageable);
+        List<HotelResponseDto> content = page.getContent()
+                .stream()
+                .map(e ->HotelMapper.toResponse(e,roomTypeRepository.findAll().stream().map(RoomTypeMapper::toResponse).toList()))
+                .toList();
+        return PagedResponse.from(page, content);
+
+
     }
 }
 

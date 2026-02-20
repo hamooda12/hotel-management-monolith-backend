@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RoomTypeMapper {
 
-    public RoomType toEntity(RoomTypeRequestDto request, Hotel hotel) {
+    static public RoomType toEntity(RoomTypeRequestDto request, Hotel hotel) {
         return RoomType.builder()
                 .hotel(hotel)
                 .name(request.getName())
@@ -16,7 +16,7 @@ public class RoomTypeMapper {
                 .build();
     }
 
-    public void updateEntity(RoomType roomType, RoomTypeRequestDto request) {
+    static public void updateEntity(RoomType roomType, RoomTypeRequestDto request) {
         roomType.setName(request.getName());
         roomType.setCapacity(request.getCapacity());
         roomType.setBasePrice(request.getBasePrice());
@@ -24,7 +24,7 @@ public class RoomTypeMapper {
         roomType.setTotalRooms(request.getTotalRooms());
     }
 
-    public RoomTypeResponseDto toResponse(RoomType roomType) {
+    static  public RoomTypeResponseDto toResponse(RoomType roomType) {
         return RoomTypeResponseDto.builder()
                 .id(roomType.getId())
                 .hotelId(roomType.getHotel().getId())
