@@ -8,7 +8,7 @@ import java.util.List;
 @Component
 public class HotelMapper {
 
-    public Hotel toEntity(HotelRequestDto request) {
+    static public Hotel toEntity(HotelRequestDto request) {
         return Hotel.builder()
                 .name(request.getName())
                 .city(request.getCity())
@@ -18,7 +18,7 @@ public class HotelMapper {
                 .build();
     }
 
-    public void updateEntity(Hotel hotel, HotelRequestDto request) {
+    static public void updateEntity(Hotel hotel, HotelRequestDto request) {
         hotel.setName(request.getName());
         hotel.setCity(request.getCity());
         hotel.setAddress(request.getAddress());
@@ -26,11 +26,11 @@ public class HotelMapper {
         hotel.setManagerEmail(request.getManagerEmail());
     }
 
-    public HotelResponseDto toResponse(Hotel hotel) {
+   static  public HotelResponseDto toResponse(Hotel hotel) {
         return toResponse(hotel, null);
     }
 
-    public HotelResponseDto toResponse(Hotel hotel, List<RoomTypeResponseDto> roomTypes) {
+   static  public HotelResponseDto toResponse(Hotel hotel, List<RoomTypeResponseDto> roomTypes) {
         return HotelResponseDto.builder()
                 .id(hotel.getId())
                 .name(hotel.getName())

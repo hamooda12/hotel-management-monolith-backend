@@ -21,30 +21,30 @@ public class RoomTypeServiceImpl {
     public RoomTypeResponseDto createRoomType(RoomTypeRequestDto request) {
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel", request.getHotelId()));
-        RoomType roomType = roomTypeMapper.toEntity(request, hotel);
+        RoomType roomType = RoomTypeMapper.toEntity(request, hotel);
         roomType = roomTypeRepository.save(roomType);
-        return roomTypeMapper.toResponse(roomType);
+        return RoomTypeMapper.toResponse(roomType);
     }
 
     @Transactional
     public RoomTypeResponseDto updateRoomType(Long id, RoomTypeRequestDto request) {
         RoomType roomType = roomTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RoomType", id));
-        roomTypeMapper.updateEntity(roomType, request);
+        RoomTypeMapper.updateEntity(roomType, request);
         roomType = roomTypeRepository.save(roomType);
-        return roomTypeMapper.toResponse(roomType);
+        return RoomTypeMapper.toResponse(roomType);
     }
 
     public RoomTypeResponseDto getRoomType(Long id) {
         RoomType roomType = roomTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RoomType", id));
-        return roomTypeMapper.toResponse(roomType);
+        return RoomTypeMapper.toResponse(roomType);
     }
 
     public List<RoomTypeResponseDto> getRoomTypesByHotel(Long hotelId) {
         return roomTypeRepository.findByHotelId(hotelId)
                 .stream()
-                .map(roomTypeMapper::toResponse)
+                .map(RoomTypeMapper::toResponse)
                 .toList();
     }
 
