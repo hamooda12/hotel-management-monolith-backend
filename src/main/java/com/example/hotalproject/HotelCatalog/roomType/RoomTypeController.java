@@ -1,6 +1,6 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 
-import com.example.hotalproject.HotelCatalog.hotel.HotelResponseDto;
+import com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException;
 import com.example.hotalproject.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
