@@ -2,13 +2,13 @@ package com.example.hotalproject.HotelCatalog.hotel;
 
 
 
+import com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException;
 import com.example.hotalproject.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -81,11 +80,11 @@ public class HotelController {
         );
         for (String paramName : request.getParameterMap().keySet()) {
             if (!ALLOWED_PARAMS.contains(paramName)) {
-                throw new com.example.hotalproject.HotelCatalog.roomType.BusinessValidationException("Query parameter '" + paramName + "' is not allowed");
+                throw new com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException("Query parameter '" + paramName + "' is not allowed");
             }
         }
         LinkedList<String> ALLOWED = new LinkedList<>();
-        ALLOWED.addAll(Arrays.asList("city", "name", "description","createdAt","address"));
+        ALLOWED.addAll(Arrays.asList("city", "name", "description","createdAt","address","id"));
 
         for (var order : pageable.getSort()) {
             if (!ALLOWED.contains(order.getProperty())) {
