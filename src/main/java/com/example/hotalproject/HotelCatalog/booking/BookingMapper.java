@@ -1,7 +1,4 @@
 package com.example.hotalproject.HotelCatalog.booking;
-
-import com.example.tourismbooking.booking.dto.BookingResponse;
-import com.example.tourismbooking.booking.entity.Booking;
 import org.springframework.stereotype.Component;
 
 @Component
