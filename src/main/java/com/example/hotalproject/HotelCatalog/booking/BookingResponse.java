@@ -1,6 +1,5 @@
 package com.example.hotalproject.HotelCatalog.booking;
 
-import com.example.tourismbooking.booking.entity.BookingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

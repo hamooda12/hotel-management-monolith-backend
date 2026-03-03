@@ -1,6 +1,6 @@
 package com.example.hotalproject.HotelCatalog.booking;
 
-import com.example.tourismbooking.catalog.entity.RoomType;
+import com.example.hotalproject.HotelCatalog.roomType.RoomType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
