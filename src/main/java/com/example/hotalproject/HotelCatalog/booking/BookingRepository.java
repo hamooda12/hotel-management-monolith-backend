@@ -1,21 +1,16 @@
 package com.example.hotalproject.HotelCatalog.booking;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-@Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    /**
-     * Count overlapping active (non-cancelled) bookings for a given room type
-     * within a date range. Two bookings overlap when:
-     *   existing.checkIn < newCheckOut  AND  existing.checkOut > newCheckIn
-     */
     @Query("""
             SELECT COUNT(b) FROM Booking b
             WHERE b.roomType.id = :roomTypeId
@@ -27,8 +22,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                        @Param("checkIn") LocalDate checkIn,
                                        @Param("checkOut") LocalDate checkOut);
 
+    @Query("""
+            SELECT COUNT(b) FROM Booking b
+            WHERE b.roomType.id = :roomTypeId
+              AND b.status <> 'CANCELLED'
+              AND b.checkIn <= :date
+              AND b.checkOut > :date
+            """)
+    int countActiveBookingsForDate(@Param("roomTypeId") Long roomTypeId,
+                                   @Param("date") LocalDate date);
+
+    @EntityGraph(attributePaths = {"roomType", "roomType.hotel"})
     List<Booking> findByGuestEmailOrderByCreatedAtDesc(String guestEmail);
 
+    @EntityGraph(attributePaths = {"roomType", "roomType.hotel"})
     @Query("""
             SELECT b FROM Booking b
             JOIN b.roomType rt
@@ -40,5 +47,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             """)
     List<Booking> findUpcomingByManager(@Param("managerEmail") String managerEmail,
                                         @Param("fromDate") LocalDate fromDate);
-}
 
+    @EntityGraph(attributePaths = {"roomType", "roomType.hotel"})
+    Optional<Booking> findWithRoomTypeById(Long id);
+
+    List<Booking> findAllByRoomTypeId(Long roomTypeId);
+}

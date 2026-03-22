@@ -1,11 +1,12 @@
-package com.example.hotalproject.HotelCatalog.Payment;
-
+package com.example.hotalproject.HotelCatalog.payment;
 
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ConflictException;
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
 import com.example.hotalproject.HotelCatalog.booking.Booking;
 import com.example.hotalproject.HotelCatalog.booking.BookingRepository;
 import com.example.hotalproject.HotelCatalog.booking.BookingStatus;
+import com.example.hotalproject.HotelCatalog.notification.NotificationService;
+import com.example.hotalproject.HotelCatalog.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public PaymentResponse createPaymentIntent(PaymentIntentRequest request) {
@@ -27,12 +29,17 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking", request.getBookingId()));
 
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new ConflictException("Payment can only be initiated for PENDING bookings. Current status: " + booking.getStatus());
+            throw new ConflictException(
+                    "Payment can only be initiated for PENDING bookings. Current status: " + booking.getStatus()
+            );
         }
 
-        // Check if a payment already exists for this booking
+
         paymentRepository.findByBookingId(booking.getId()).ifPresent(existing -> {
-            throw new ConflictException("Payment already exists for booking " + booking.getId() + " with status: " + existing.getStatus());
+            throw new ConflictException(
+                    "Payment already exists for booking " + booking.getId() +
+                            " with status: " + existing.getStatus()
+            );
         });
 
         Payment payment = Payment.builder()
@@ -43,7 +50,17 @@ public class PaymentService {
                 .build();
 
         payment = paymentRepository.save(payment);
-        log.info("Payment {} initiated for booking {} – amount {}", payment.getId(), booking.getId(), payment.getAmount());
+
+        notificationService.send(
+                booking.getGuestEmail(),
+                NotificationType.PAYMENT_INITIATED,
+                "Payment initiated",
+                "Payment intent created for booking #" + booking.getId() +
+                        ". Reference: " + payment.getProviderRef()
+        );
+
+        log.info("Payment {} initiated for booking {} - amount {}",
+                payment.getId(), booking.getId(), payment.getAmount());
 
         return toResponse(payment);
     }
@@ -54,13 +71,49 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId));
 
         if (payment.getStatus() != PaymentStatus.INITIATED) {
-            throw new ConflictException("Only INITIATED payments can be simulated. Current status: " + payment.getStatus());
+            throw new ConflictException(
+                    "Only INITIATED payments can be simulated. Current status: " + payment.getStatus()
+            );
         }
 
         PaymentStatus outcome = PaymentStatus.valueOf(request.getOutcome());
+        Booking booking = payment.getBooking();
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new ConflictException(
+                    "Payment simulation requires booking to be PENDING. Current booking status: " + booking.getStatus()
+            );
+        }
+
+        if (outcome == PaymentStatus.SUCCESS) {
+            booking.setStatus(BookingStatus.CONFIRMED);
+
+            notificationService.send(
+                    booking.getGuestEmail(),
+                    NotificationType.PAYMENT_SUCCESS,
+                    "Payment successful",
+                    "Payment for booking #" + booking.getId() + " was successful."
+            );
+        }
+
+        if (outcome == PaymentStatus.FAILED) {
+            booking.setStatus(BookingStatus.PENDING);
+
+            notificationService.send(
+                    booking.getGuestEmail(),
+                    NotificationType.PAYMENT_FAILED,
+                    "Payment failed",
+                    "Payment for booking #" + booking.getId() + " has failed."
+            );
+        }
+
         payment.setStatus(outcome);
+
+        bookingRepository.save(booking);
         payment = paymentRepository.save(payment);
-        log.info("Payment {} simulated with outcome: {}", paymentId, outcome);
+
+        log.info("Payment {} simulated with outcome {} for booking {}",
+                paymentId, outcome, booking.getId());
 
         return toResponse(payment);
     }
@@ -71,18 +124,28 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId));
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
-            throw new ConflictException("Only SUCCESS payments can be refunded. Current status: " + payment.getStatus());
+            throw new ConflictException(
+                    "Only SUCCESS payments can be refunded. Current status: " + payment.getStatus()
+            );
         }
 
-        // Verify the booking allows cancellation (booking must be cancelled or cancellable)
         Booking booking = payment.getBooking();
+
         if (booking.getStatus() != BookingStatus.CANCELLED) {
             throw new ConflictException("Refund is only allowed for cancelled bookings");
         }
 
         payment.setStatus(PaymentStatus.REFUNDED);
         payment = paymentRepository.save(payment);
-        log.info("Payment {} refunded", paymentId);
+
+        notificationService.send(
+                booking.getGuestEmail(),
+                NotificationType.PAYMENT_REFUNDED,
+                "Payment refunded",
+                "Payment for booking #" + booking.getId() + " has been refunded."
+        );
+
+        log.info("Payment {} refunded for booking {}", paymentId, booking.getId());
 
         return toResponse(payment);
     }
@@ -98,4 +161,3 @@ public class PaymentService {
                 .build();
     }
 }
-

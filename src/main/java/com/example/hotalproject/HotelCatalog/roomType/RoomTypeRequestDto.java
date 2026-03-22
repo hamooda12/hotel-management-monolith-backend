@@ -14,8 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class RoomTypeRequestDto {
 
-    @NotNull(message = "Hotel ID is required")
-    private Long hotelId;
+
 
     @NotBlank(message = "Room type name is required")
     private String name;

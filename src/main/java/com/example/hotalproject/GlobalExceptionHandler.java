@@ -31,7 +31,8 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
-    @ExceptionHandler({ResourseAlreadyExistException.class,ResourseAlreadyExsitInResourseException.class,ResourseHasNotResourseException.class,ResourseHasResourseException.class})
+
+    @ExceptionHandler({ResourseAlreadyExistException.class,ResourseAlreadyExsitInResourseException.class,ResourseHasNotResourseException.class,ResourseHasResourseException.class,ConflictException.class})
     public ResponseEntity<ApiError> handleAlreadyExist(
             RuntimeException ex,
             HttpServletRequest request

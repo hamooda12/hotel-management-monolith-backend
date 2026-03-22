@@ -1,4 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Availability;
+package com.example.hotalproject.HotelCatalog.availability;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

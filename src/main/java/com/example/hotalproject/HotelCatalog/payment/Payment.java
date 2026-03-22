@@ -1,4 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Payment;
+package com.example.hotalproject.HotelCatalog.payment;
 
 import com.example.hotalproject.HotelCatalog.booking.Booking;
 import jakarta.persistence.*;
@@ -32,10 +32,10 @@ public class Payment {
     @Column(nullable = false)
     private PaymentStatus status;
 
+    @Column(length = 100)
     private String providerRef;
 
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
 }
-

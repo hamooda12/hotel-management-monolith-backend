@@ -1,4 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Payment;
+package com.example.hotalproject.HotelCatalog.payment;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,4 +17,3 @@ public class PaymentSimulateRequest {
     @Pattern(regexp = "SUCCESS|FAILED", message = "Outcome must be SUCCESS or FAILED")
     private String outcome;
 }
-

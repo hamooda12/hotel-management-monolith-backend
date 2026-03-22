@@ -13,94 +13,118 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;import java.util.Arrays;
-import java.util.LinkedList;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/room-types")
 @RequiredArgsConstructor
 @Tag(name = "Room Types", description = "Room type management")
 public class RoomTypeController {
 
     private final RoomTypeServiceImpl roomTypeService;
-    @GetMapping
-    @Operation(summary = "Browse RoomsType with filters and pagination")
-    public ResponseEntity<PagedResponse<RoomTypeResponseDto>> browseroomtype(
+
+    @GetMapping("/api/room-types")
+    @Operation(summary = "Browse room types with filters and pagination")
+    public ResponseEntity<PagedResponse<RoomTypeResponseDto>> browseRoomTypes(
             @PageableDefault(size = 10)
             @SortDefault.SortDefaults({
                     @SortDefault(sort = "id", direction = Sort.Direction.DESC)
             })
             Pageable pageable,
-            @RequestParam(required = false) String aminities,
+            @RequestParam(required = false) String amenities,
             @RequestParam(required = false) String nameContains,
-            @RequestParam(required = false) Integer mincapacity,
-            @RequestParam(required = false) Integer maxcapacity,
-            @RequestParam(required = false) Integer mintotalroom,
-            @RequestParam(required = false) Integer maxtotalroom,
-            @RequestParam(required = false) Integer minprice,
-            @RequestParam(required = false) Integer maxprice,
-      HttpServletRequest request
+            @RequestParam(required = false) Integer minCapacity,
+            @RequestParam(required = false) Integer maxCapacity,
+            @RequestParam(required = false) Integer minTotalRooms,
+            @RequestParam(required = false) Integer maxTotalRooms,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            HttpServletRequest request
     ) {
 
-        Set<String> ALLOWED_PARAMS = Set.of(
+        Set<String> allowedParams = Set.of(
                 "page", "size", "sort",
-                "aminities", "nameContains",
-                "mincapacity", "maxcapacity",
-                "mintotalroom", "maxtotalroom",
-                "minprice", "maxprice"
+                "amenities", "nameContains",
+                "minCapacity", "maxCapacity",
+                "minTotalRooms", "maxTotalRooms",
+                "minPrice", "maxPrice"
         );
+
         for (String paramName : request.getParameterMap().keySet()) {
-            if (!ALLOWED_PARAMS.contains(paramName)) {
-                throw new BusinessValidationException("Query parameter '" + paramName + "' is not allowed");
+            if (!allowedParams.contains(paramName)) {
+                throw new BusinessValidationException(
+                        "Query parameter '" + paramName + "' is not allowed"
+                );
             }
         }
-        LinkedList<String> ALLOWED = new LinkedList<>();
-        ALLOWED.addAll(Arrays.asList("aminities", "basePrice", "totalRooms","name", "capacity","hotel","id"));
+
+        Set<String> allowedSortFields = Set.of(
+                "id", "name", "capacity", "basePrice", "totalRooms"
+        );
 
         for (var order : pageable.getSort()) {
-            if (!ALLOWED.contains(order.getProperty())) {
+            if (!allowedSortFields.contains(order.getProperty())) {
                 throw new BusinessValidationException(
                         "Sorting by '" + order.getProperty() + "' is not allowed"
                 );
-            }}
+            }
+        }
 
-
-        return ResponseEntity.ok(roomTypeService.listRoomType(pageable,nameContains,aminities,mincapacity,maxcapacity,mintotalroom,maxtotalroom,minprice,maxprice));
+        return ResponseEntity.ok(
+                roomTypeService.listRoomType(
+                        pageable,
+                        nameContains,
+                        amenities,
+                        minCapacity,
+                        maxCapacity,
+                        minTotalRooms,
+                        maxTotalRooms,
+                        minPrice,
+                        maxPrice
+                )
+        );
     }
 
-    @PostMapping
-    @Operation(summary = "Create a new room type")
-    public ResponseEntity<RoomTypeResponseDto> createRoomType(@Valid @RequestBody RoomTypeRequestDto request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(roomTypeService.createRoomType(request));
+    @PostMapping("/api/hotels/{hotelId}/room-types")
+    @Operation(summary = "Create a new room type for a specific hotel")
+    public ResponseEntity<RoomTypeResponseDto> createRoomType(
+            @PathVariable Long hotelId,
+            @Valid @RequestBody RoomTypeRequestDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(roomTypeService.createRoomType(hotelId, request));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/api/room-types/{id}")
     @Operation(summary = "Update an existing room type")
-    public ResponseEntity<RoomTypeResponseDto> updateRoomType(@PathVariable Long id,
-                                                           @Valid @RequestBody RoomTypeRequestDto request) {
+    public ResponseEntity<RoomTypeResponseDto> updateRoomType(
+            @PathVariable Long id,
+            @Valid @RequestBody RoomTypeRequestDto request
+    ) {
         return ResponseEntity.ok(roomTypeService.updateRoomType(id, request));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/room-types/{id}")
     @Operation(summary = "Get a room type by ID")
     public ResponseEntity<RoomTypeResponseDto> getRoomType(@PathVariable Long id) {
-        RoomType room=roomTypeService.getRoomType(id).orElseThrow(()-> new RoomTypeNotFoundException("There is no roomtype"));
+        RoomType room = roomTypeService.getRoomType(id)
+                .orElseThrow(() -> new RoomTypeNotFoundException("Room type not found with id: " + id));
         return ResponseEntity.ok(RoomTypeMapper.toResponse(room));
     }
 
-    @GetMapping("/hotel/{hotelId}")
-    @Operation(summary = "Get all room types for a hotel")
+    @GetMapping("/api/hotels/{hotelId}/room-types")
+    @Operation(summary = "Get all room types for a specific hotel")
     public ResponseEntity<List<RoomTypeResponseDto>> getRoomTypesByHotel(@PathVariable Long hotelId) {
         return ResponseEntity.ok(roomTypeService.getRoomTypesByHotel(hotelId));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/api/room-types/{id}")
     @Operation(summary = "Delete a room type")
     public ResponseEntity<Void> deleteRoomType(@PathVariable Long id) {
         roomTypeService.deleteRoomType(id);
         return ResponseEntity.noContent().build();
     }
 }
-
