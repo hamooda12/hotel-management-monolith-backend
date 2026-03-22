@@ -3,6 +3,7 @@ package com.example.hotalproject.HotelCatalog.roomType;
 
 import org.springframework.data.jpa.domain.Specification;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class RoomTypeSpecifications {
@@ -39,7 +40,7 @@ public class RoomTypeSpecifications {
             return cb.lessThanOrEqualTo(root.get("totalRooms"), maxtotalrooms);
         };
     }
-    public static Specification<RoomType> SalaryBetween(Integer minsalary, Integer maxsalary) {
+    public static Specification<RoomType> SalaryBetween(BigDecimal minsalary, BigDecimal maxsalary) {
         return (root, query, cb) -> {
             if (minsalary == null && maxsalary == null) return null;
             if (minsalary != null && maxsalary != null) return cb.between(root.get("basePrice"), minsalary, maxsalary);

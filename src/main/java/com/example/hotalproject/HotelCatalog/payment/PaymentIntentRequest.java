@@ -1,4 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Payment;
+package com.example.hotalproject.HotelCatalog.payment;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,4 +15,3 @@ public class PaymentIntentRequest {
     @NotNull(message = "Booking ID is required")
     private Long bookingId;
 }
-
