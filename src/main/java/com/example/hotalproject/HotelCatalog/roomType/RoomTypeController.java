@@ -13,9 +13,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
+import org.springframework.web.bind.annotation.*;import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -88,7 +86,8 @@ public class RoomTypeController {
     @GetMapping("/{id}")
     @Operation(summary = "Get a room type by ID")
     public ResponseEntity<RoomTypeResponseDto> getRoomType(@PathVariable Long id) {
-        return ResponseEntity.ok(roomTypeService.getRoomType(id));
+        RoomType room=roomTypeService.getRoomType(id).orElseThrow(()-> new RoomTypeNotFoundException("There is no roomtype"));
+        return ResponseEntity.ok(RoomTypeMapper.toResponse(room));
     }
 
     @GetMapping("/hotel/{hotelId}")

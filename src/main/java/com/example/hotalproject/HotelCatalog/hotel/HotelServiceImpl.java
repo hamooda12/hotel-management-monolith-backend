@@ -19,19 +19,19 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class HotelServiceImpl {
+public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
     private final RoomTypeRepository roomTypeRepository;
 
-
+    @Override
     @Transactional
     public HotelResponseDto createHotel(HotelRequestDto request) {
         Hotel hotel = HotelMapper.toEntity(request);
         hotel = hotelRepository.save(hotel);
         return HotelMapper.toResponse(hotel);
     }
-
+    @Override
     @Transactional
     public HotelResponseDto updateHotel(Long id, HotelRequestDto request) {
         Hotel hotel = hotelRepository.findById(id)
@@ -40,7 +40,7 @@ public class HotelServiceImpl {
         hotel = hotelRepository.save(hotel);
         return HotelMapper.toResponse(hotel);
     }
-
+    @Override
     public HotelResponseDto getHotel(Long id) {
         Hotel hotel = hotelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel", id));
@@ -50,7 +50,7 @@ public class HotelServiceImpl {
                 .toList();
         return HotelMapper.toResponse(hotel, roomTypes);
     }
-
+    @Override
     @Transactional
     public void deleteHotel(Long id) {
         if (!hotelRepository.existsById(id)) {
@@ -58,7 +58,7 @@ public class HotelServiceImpl {
         }
         hotelRepository.deleteById(id);
     }
-
+    @Override
     public PagedResponse<HotelResponseDto> listHotels(Pageable pageable,String nameContains,String city,String description,LocalDate before,LocalDate after) {
         Specification<Hotel> spec = null;
 

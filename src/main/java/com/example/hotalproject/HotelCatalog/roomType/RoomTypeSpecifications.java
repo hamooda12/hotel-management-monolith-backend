@@ -23,7 +23,7 @@ public class RoomTypeSpecifications {
         {
         if (mincapacity == null && maxcapacity == null) return null;
         if (mincapacity != null && maxcapacity != null) return cb.between(root.get("capacity"), mincapacity, maxcapacity);
-        if (mincapacity != null && maxcapacity==null) return cb.greaterThanOrEqualTo(root.get("yearsOfExperience"), mincapacity);
+        if (mincapacity != null && maxcapacity==null) return cb.greaterThanOrEqualTo(root.get("capacity"), mincapacity);
         return cb.lessThanOrEqualTo(root.get("capacity"), maxcapacity);
 
         };

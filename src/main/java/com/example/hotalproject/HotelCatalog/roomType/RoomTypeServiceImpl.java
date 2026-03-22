@@ -11,16 +11,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class RoomTypeServiceImpl {
+public class RoomTypeServiceImpl implements RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
     private final HotelRepository hotelRepository;
     private final RoomTypeMapper roomTypeMapper;
 
+    @Override
     @Transactional
     public RoomTypeResponseDto createRoomType(RoomTypeRequestDto request) {
         Hotel hotel = hotelRepository.findById(request.getHotelId())
@@ -29,7 +31,7 @@ public class RoomTypeServiceImpl {
         roomType = roomTypeRepository.save(roomType);
         return RoomTypeMapper.toResponse(roomType);
     }
-
+    @Override
     @Transactional
     public RoomTypeResponseDto updateRoomType(Long id, RoomTypeRequestDto request) {
         RoomType roomType = roomTypeRepository.findById(id)
@@ -39,19 +41,14 @@ public class RoomTypeServiceImpl {
         return RoomTypeMapper.toResponse(roomType);
     }
 
-    public RoomTypeResponseDto getRoomType(Long id) {
-        RoomType roomType = roomTypeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("RoomType", id));
-        return RoomTypeMapper.toResponse(roomType);
-    }
-
+    @Override
     public List<RoomTypeResponseDto> getRoomTypesByHotel(Long hotelId) {
         return roomTypeRepository.findByHotelId(hotelId)
                 .stream()
                 .map(RoomTypeMapper::toResponse)
                 .toList();
     }
-
+    @Override
     @Transactional
     public void deleteRoomType(Long id) {
         if (!roomTypeRepository.existsById(id)) {
@@ -59,6 +56,7 @@ public class RoomTypeServiceImpl {
         }
         roomTypeRepository.deleteById(id);
     }
+    @Override
     public PagedResponse<RoomTypeResponseDto> listRoomType(Pageable pageable, String nameContains, String amenities,Integer mincapacity,Integer maxcapacity,Integer mintotalrooms,Integer maxtotalrooms,Integer minsalary,Integer maxsalary) {
         Specification<RoomType> spec = null;
 
@@ -90,6 +88,11 @@ public class RoomTypeServiceImpl {
         return PagedResponse.from(page, content);
 
 
+    }
+
+    @Override
+    public Optional<RoomType> getRoomType(Long id) {
+        return roomTypeRepository.findById(id);
     }
 }
 

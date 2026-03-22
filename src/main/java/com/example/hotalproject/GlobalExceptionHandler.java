@@ -79,8 +79,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> ValidationError(
             SQLIntegrityConstraintViolationException ex,
             HttpServletRequest request
-    ){
-        ApiError body = new ApiError(
+    ){        ApiError body = new ApiError(
                 Instant.now().toString(),
                 HttpStatus.CONFLICT.value(),
                 HttpStatus.CONFLICT.getReasonPhrase(),
