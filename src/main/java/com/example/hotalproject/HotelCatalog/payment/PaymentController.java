@@ -1,5 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Payment;
-
+package com.example.hotalproject.HotelCatalog.payment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +20,8 @@ public class PaymentController {
     @Operation(summary = "Create a payment intent for a booking")
     public ResponseEntity<PaymentResponse> createPaymentIntent(
             @Valid @RequestBody PaymentIntentRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createPaymentIntent(request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(paymentService.createPaymentIntent(request));
     }
 
     @PostMapping("/{paymentId}/simulate")
@@ -38,4 +38,3 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.refundPayment(paymentId));
     }
 }
-

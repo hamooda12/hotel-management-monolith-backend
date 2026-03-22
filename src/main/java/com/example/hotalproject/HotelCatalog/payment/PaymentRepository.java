@@ -1,4 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Payment;
+package com.example.hotalproject.HotelCatalog.payment;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,4 +10,3 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByBookingId(Long bookingId);
 }
-

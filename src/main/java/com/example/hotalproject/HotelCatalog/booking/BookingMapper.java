@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookingMapper {
 
-    public BookingResponse toResponse(Booking booking) {
+     public static BookingResponse toResponse(Booking booking) {
         return BookingResponse.builder()
                 .id(booking.getId())
                 .guestEmail(booking.getGuestEmail())

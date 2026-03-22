@@ -1,4 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Payment;
+package com.example.hotalproject.HotelCatalog.payment;
 
 public enum PaymentStatus {
     INITIATED,
@@ -6,4 +6,3 @@ public enum PaymentStatus {
     FAILED,
     REFUNDED
 }
-

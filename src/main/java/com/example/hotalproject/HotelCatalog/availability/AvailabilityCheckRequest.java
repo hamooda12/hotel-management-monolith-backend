@@ -1,4 +1,4 @@
-package com.example.hotalproject.HotelCatalog.Availability;
+package com.example.hotalproject.HotelCatalog.availability;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

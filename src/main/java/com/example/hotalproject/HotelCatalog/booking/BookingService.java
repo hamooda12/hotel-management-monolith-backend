@@ -1,0 +1,188 @@
+package com.example.hotalproject.HotelCatalog.booking;
+
+import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
+import com.example.hotalproject.HotelCatalog.notification.NotificationService;
+import com.example.hotalproject.HotelCatalog.notification.NotificationType;
+import com.example.hotalproject.HotelCatalog.roomType.RoomType;
+import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class BookingService {
+
+    private final BookingRepository bookingRepository;
+    private final RoomTypeRepository roomTypeRepository;
+
+    private final NotificationService notificationService;
+    public BookingResponse getBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(()->new BookingException("Booking not found"));
+    return  BookingMapper.toResponse(booking);
+    }
+    public List<BookingResponse> getAllBookings() {
+        List<Booking> bookings = bookingRepository.findAll();
+        List<BookingResponse> bookingResponseList = new ArrayList<>();
+        for (Booking booking : bookings) {
+            bookingResponseList.add(BookingMapper.toResponse(booking));
+        }
+        return bookingResponseList;
+    }
+    public List<BookingResponse> getBookingWithRoomType(Long  roomTypeId) {
+        if(roomTypeRepository.findById(roomTypeId).isPresent()) {
+            return  bookingRepository.findAllByRoomTypeId(roomTypeId).stream().map(BookingMapper::toResponse).toList();
+        }
+        else {
+            throw new ResourceNotFoundException("Room Type not found");
+        }
+    }
+
+    public BookingResponse createBooking(BookingRequest request) {
+        validateBookingRequest(request);
+
+        RoomType roomType = roomTypeRepository.findById(request.getRoomTypeId())
+                .orElseThrow(() -> new BookingException("Room type not found with id: " + request.getRoomTypeId()));
+
+        if (request.getGuests() > roomType.getCapacity()) {
+            throw new BookingException("Number of guests exceeds room capacity");
+        }
+
+        int overlapping = bookingRepository.countOverlappingActiveBookings(
+                roomType.getId(),
+                request.getCheckIn(),
+                request.getCheckOut()
+        );
+
+        int availableRooms = roomType.getTotalRooms() - overlapping;
+        if (availableRooms <= 0) {
+            throw new BookingException("No rooms available for the selected dates");
+        }
+
+        long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+        BigDecimal totalPrice = roomType.getBasePrice().multiply(BigDecimal.valueOf(nights));
+
+        Booking booking = Booking.builder()
+                .guestEmail(request.getGuestEmail())
+                .roomType(roomType)
+                .checkIn(request.getCheckIn())
+                .checkOut(request.getCheckOut())
+                .guests(request.getGuests())
+                .status(BookingStatus.PENDING)
+                .totalPrice(totalPrice)
+                .build();
+
+        Booking saved = bookingRepository.save(booking);
+
+        notificationService.send(
+                saved.getGuestEmail(),
+                NotificationType.BOOKING_CREATED,
+                "Booking created",
+                "Your booking #" + saved.getId() + " has been created and is pending payment."
+        );
+
+        Booking detailed = bookingRepository.findWithRoomTypeById(saved.getId())
+                .orElseThrow(() -> new BookingException("Booking saved but could not be reloaded"));
+
+        return BookingMapper.toResponse(detailed);
+    }
+
+    public BookingResponse confirmBooking(Long bookingId) {
+        Booking booking = bookingRepository.findWithRoomTypeById(bookingId)
+                .orElseThrow(() -> new BookingException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BookingException("Cancelled booking cannot be confirmed");
+        }
+
+        if (booking.getStatus() == BookingStatus.CONFIRMED) {
+            throw new BookingException("Booking is already confirmed");
+        }
+
+        int overlapping = bookingRepository.countOverlappingActiveBookings(
+                booking.getRoomType().getId(),
+                booking.getCheckIn(),
+                booking.getCheckOut()
+        );
+
+        if (overlapping > booking.getRoomType().getTotalRooms()) {
+            throw new BookingException("No rooms available anymore for confirmation");
+        }
+
+        booking.setStatus(BookingStatus.CONFIRMED);
+        Booking updated = bookingRepository.save(booking);
+
+        notificationService.send(
+                updated.getGuestEmail(),
+                NotificationType.BOOKING_CONFIRMED,
+                "Booking confirmed",
+                "Your booking #" + updated.getId() + " has been confirmed."
+        );
+
+        return BookingMapper.toResponse(updated);
+    }
+
+    public BookingResponse cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findWithRoomTypeById(bookingId)
+                .orElseThrow(() -> new BookingException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BookingException("Booking is already cancelled");
+        }
+
+        LocalDate today = LocalDate.now();
+
+        if (!today.isBefore(booking.getCheckIn().minusDays(1))) {
+            throw new BookingException("Cancellation is not allowed less than 24 hours before check-in");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        Booking updated = bookingRepository.save(booking);
+
+        notificationService.send(
+                updated.getGuestEmail(),
+                NotificationType.BOOKING_CANCELLED,
+                "Booking cancelled",
+                "Your booking #" + updated.getId() + " has been cancelled successfully."
+        );
+
+        return BookingMapper.toResponse(updated);
+    }
+
+    @Transactional
+    public List<BookingResponse> getGuestBookingHistory(String guestEmail) {
+        return bookingRepository.findByGuestEmailOrderByCreatedAtDesc(guestEmail)
+                .stream()
+                .map(BookingMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public List<BookingResponse> getManagerUpcomingBookings(String managerEmail) {
+        return bookingRepository.findUpcomingByManager(managerEmail, LocalDate.now())
+                .stream()
+                .map(BookingMapper::toResponse)
+                .toList();
+    }
+
+    private void validateBookingRequest(BookingRequest request) {
+        if (request.getCheckIn() == null || request.getCheckOut() == null) {
+            throw new BookingException("Check-in and check-out dates are required");
+        }
+
+        if (!request.getCheckOut().isAfter(request.getCheckIn())) {
+            throw new BookingException("Check-out date must be after check-in date");
+        }
+
+        if (request.getGuests() < 1) {
+            throw new BookingException("At least one guest is required");
+        }
+    }
+}
