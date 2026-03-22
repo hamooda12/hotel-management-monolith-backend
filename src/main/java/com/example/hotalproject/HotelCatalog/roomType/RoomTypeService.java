@@ -1,17 +1,16 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 
+import com.example.hotalproject.PagedResponse;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface RoomTypeService {
-    RoomType createRoomType(RoomType roomType);
-        RoomType getRoomTypeById(Long id);
-        RoomType updateRoomType(Long id, RoomType roomType);
-        RoomType deleteRoomType(Long id);
-        RoomType getRoomTypeByName(String name);
-        List<RoomType> getRoomTypeByHotelId(Long hotelId);
-        RoomType getRoomTypeByHotelIdAndName(Long hotelId, String name);
-        RoomType replaceRoomType(Long id, RoomType roomType);
-        RoomType removeRoomFromRoomType(Long roomTypeId, Long roomId);
-        RoomType replaceRoomInRoomType(Long roomTypeId, Long oldRoomId, Long newRoomId);
-        List<RoomType> getAllRoomTypes();
+        RoomTypeResponseDto createRoomType(RoomTypeRequestDto request);
+        RoomTypeResponseDto updateRoomType(Long id, RoomTypeRequestDto request);
+        List<RoomTypeResponseDto> getRoomTypesByHotel(Long hotelId);
+        void deleteRoomType(Long id);
+        PagedResponse<RoomTypeResponseDto> listRoomType(Pageable pageable, String nameContains, String amenities, Integer mincapacity, Integer maxcapacity, Integer mintotalrooms, Integer maxtotalrooms, Integer minsalary, Integer maxsalary);
+        Optional<RoomType> getRoomType(Long id);
 }
