@@ -1,13 +1,23 @@
 package com.example.hotalproject.HotelCatalog.Availability;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public record AvailabilityCheckResponse(
-		Long roomTypeId,
-		Long hotelId,
-		LocalDate checkinDate,
-		LocalDate checkoutDate,
-		boolean available,
-		List<AvailabilityResponse> records
-) {}
+@Data
+@Builder
+@AllArgsConstructor
+public class AvailabilityCheckResponse {
+	private Long hotelId;
+	private Long roomTypeId;
+	private Integer guests;
+	private LocalDate checkinDate;
+	private LocalDate checkoutDate;
+	private Boolean available;
+	private BigDecimal totalPrice;
+	private List<AvailabilityDayResponse> days;
+}
