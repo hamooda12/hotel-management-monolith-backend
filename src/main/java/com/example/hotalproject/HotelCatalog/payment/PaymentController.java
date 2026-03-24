@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
@@ -36,5 +38,15 @@ public class PaymentController {
     @Operation(summary = "Refund a successful payment (only for cancelled bookings)")
     public ResponseEntity<PaymentResponse> refundPayment(@PathVariable Long paymentId) {
         return ResponseEntity.ok(paymentService.refundPayment(paymentId));
+    }
+    @GetMapping("/{paymentId}")
+    @Operation(summary = "Get Payment with Id")
+    public ResponseEntity<PaymentResponse> getPayment(@PathVariable Long paymentId) {
+        return ResponseEntity.ok(paymentService.getPayment(paymentId));
+    }
+    @GetMapping("")
+    @Operation(summary = "Get Payment with Id")
+    public ResponseEntity<List<PaymentResponse>> getPayment() {
+        return ResponseEntity.ok(paymentService.getPayments());
     }
 }

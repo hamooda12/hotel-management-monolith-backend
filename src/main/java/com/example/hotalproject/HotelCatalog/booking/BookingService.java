@@ -3,6 +3,9 @@ package com.example.hotalproject.HotelCatalog.booking;
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
 import com.example.hotalproject.HotelCatalog.notification.NotificationService;
 import com.example.hotalproject.HotelCatalog.notification.NotificationType;
+import com.example.hotalproject.HotelCatalog.payment.Payment;
+import com.example.hotalproject.HotelCatalog.payment.PaymentRepository;
+import com.example.hotalproject.HotelCatalog.payment.PaymentStatus;
 import com.example.hotalproject.HotelCatalog.roomType.RoomType;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
 import jakarta.transaction.Transactional;
@@ -14,6 +17,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +26,7 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final RoomTypeRepository roomTypeRepository;
-
+private  final PaymentRepository paymentRepository;
     private final NotificationService notificationService;
     public BookingResponse getBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(()->new BookingException("Booking not found"));
@@ -145,7 +149,9 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CANCELLED);
         Booking updated = bookingRepository.save(booking);
-
+Payment payment=paymentRepository.findByBookingId(updated.getId()).orElseThrow(() -> new BookingException("Booking not found with id: " + updated.getId()));
+       payment.setStatus(PaymentStatus.REFUNDED);
+       paymentRepository.save(payment);
         notificationService.send(
                 updated.getGuestEmail(),
                 NotificationType.BOOKING_CANCELLED,
