@@ -21,6 +21,7 @@ public class HotelResponseDto {
     private String address;
     private String description;
     private String managerEmail;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<RoomTypeResponseDto> roomTypes;

@@ -39,6 +39,9 @@ public class Hotel {
     @Column(nullable = false)
     private String managerEmail;
 
+    @Column(length = 500)
+    private String imageUrl;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

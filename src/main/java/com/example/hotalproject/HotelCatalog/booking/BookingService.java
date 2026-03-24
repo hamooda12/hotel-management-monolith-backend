@@ -10,6 +10,7 @@ import com.example.hotalproject.HotelCatalog.roomType.RoomType;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,7 +18,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +26,12 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final RoomTypeRepository roomTypeRepository;
-private  final PaymentRepository paymentRepository;
+    private  final PaymentRepository paymentRepository;
     private final NotificationService notificationService;
-    public BookingResponse getBooking(Long bookingId) {
+    public BookingResponse getBooking(Long bookingId, String requesterEmail, boolean privilegedUser) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(()->new BookingException("Booking not found"));
-    return  BookingMapper.toResponse(booking);
+        ensureCanAccessBooking(booking, requesterEmail, privilegedUser);
+        return  BookingMapper.toResponse(booking);
     }
     public List<BookingResponse> getAllBookings() {
         List<Booking> bookings = bookingRepository.findAll();
@@ -49,8 +50,8 @@ private  final PaymentRepository paymentRepository;
         }
     }
 
-    public BookingResponse createBooking(BookingRequest request) {
-        validateBookingRequest(request);
+    public BookingResponse createBooking(BookingRequest request, String requesterEmail, boolean privilegedUser) {
+        validateBookingRequest(request, privilegedUser);
 
         RoomType roomType = roomTypeRepository.findById(request.getRoomTypeId())
                 .orElseThrow(() -> new BookingException("Room type not found with id: " + request.getRoomTypeId()));
@@ -73,8 +74,9 @@ private  final PaymentRepository paymentRepository;
         long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
         BigDecimal totalPrice = roomType.getBasePrice().multiply(BigDecimal.valueOf(nights));
 
+        String guestEmail = privilegedUser ? request.getGuestEmail() : requesterEmail;
         Booking booking = Booking.builder()
-                .guestEmail(request.getGuestEmail())
+                .guestEmail(guestEmail)
                 .roomType(roomType)
                 .checkIn(request.getCheckIn())
                 .checkOut(request.getCheckOut())
@@ -133,9 +135,10 @@ private  final PaymentRepository paymentRepository;
         return BookingMapper.toResponse(updated);
     }
 
-    public BookingResponse cancelBooking(Long bookingId) {
+    public BookingResponse cancelBooking(Long bookingId, String requesterEmail, boolean privilegedUser) {
         Booking booking = bookingRepository.findWithRoomTypeById(bookingId)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + bookingId));
+        ensureCanAccessBooking(booking, requesterEmail, privilegedUser);
 
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new BookingException("Booking is already cancelled");
@@ -149,9 +152,9 @@ private  final PaymentRepository paymentRepository;
 
         booking.setStatus(BookingStatus.CANCELLED);
         Booking updated = bookingRepository.save(booking);
-Payment payment=paymentRepository.findByBookingId(updated.getId()).orElseThrow(() -> new BookingException("Booking not found with id: " + updated.getId()));
-       payment.setStatus(PaymentStatus.REFUNDED);
-       paymentRepository.save(payment);
+        Payment payment=paymentRepository.findByBookingId(updated.getId()).orElseThrow(() -> new BookingException("Booking not found with id: " + updated.getId()));
+        payment.setStatus(PaymentStatus.REFUNDED);
+        paymentRepository.save(payment);
         notificationService.send(
                 updated.getGuestEmail(),
                 NotificationType.BOOKING_CANCELLED,
@@ -178,7 +181,7 @@ Payment payment=paymentRepository.findByBookingId(updated.getId()).orElseThrow((
                 .toList();
     }
 
-    private void validateBookingRequest(BookingRequest request) {
+    private void validateBookingRequest(BookingRequest request, boolean privilegedUser) {
         if (request.getCheckIn() == null || request.getCheckOut() == null) {
             throw new BookingException("Check-in and check-out dates are required");
         }
@@ -189,6 +192,16 @@ Payment payment=paymentRepository.findByBookingId(updated.getId()).orElseThrow((
 
         if (request.getGuests() < 1) {
             throw new BookingException("At least one guest is required");
+        }
+
+        if (privilegedUser && (request.getGuestEmail() == null || request.getGuestEmail().isBlank())) {
+            throw new BookingException("Guest email is required");
+        }
+    }
+
+    private void ensureCanAccessBooking(Booking booking, String requesterEmail, boolean privilegedUser) {
+        if (!privilegedUser && !booking.getGuestEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new AccessDeniedException("You are not allowed to access this booking");
         }
     }
 }

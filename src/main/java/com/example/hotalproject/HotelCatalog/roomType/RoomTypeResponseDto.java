@@ -21,5 +21,6 @@ public class RoomTypeResponseDto {
     private BigDecimal basePrice;
     private String amenities;
     private int totalRooms;
+    private String imageUrl;
 }
 

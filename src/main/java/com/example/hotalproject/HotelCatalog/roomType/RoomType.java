@@ -38,6 +38,9 @@ public class RoomType {
     @Column(nullable = false)
     private int totalRooms;
 
+    @Column(length = 500)
+    private String imageUrl;
+
     @Version
     private Long version;
 }

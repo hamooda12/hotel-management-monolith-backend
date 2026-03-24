@@ -4,6 +4,7 @@ import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFound
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeMapper;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeResponseDto;
+import com.example.hotalproject.media.FileStorageService;
 import com.example.hotalproject.PagedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,8 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
     private final RoomTypeRepository roomTypeRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -85,6 +87,16 @@ public class HotelServiceImpl implements HotelService {
         return PagedResponse.from(page, content);
 
 
+    }
+
+    @Transactional
+    public HotelResponseDto uploadHotelImage(Long hotelId, MultipartFile file) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel", hotelId));
+        String imagePath = fileStorageService.storeHotelImage(hotelId, file, hotel.getImageUrl());
+        hotel.setImageUrl(imagePath);
+        hotel = hotelRepository.save(hotel);
+        return HotelMapper.toResponse(hotel);
     }
 }
 

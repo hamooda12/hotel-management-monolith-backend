@@ -3,6 +3,9 @@ package com.example.hotalproject.HotelCatalog.roomType;
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException;
 import com.example.hotalproject.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -12,8 +15,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -90,6 +95,12 @@ public class RoomTypeController {
 
     @PostMapping("/api/hotels/{hotelId}/room-types")
     @Operation(summary = "Create a new room type for a specific hotel")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Room type created"),
+            @ApiResponse(responseCode = "400", description = "Validation error"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
     public ResponseEntity<RoomTypeResponseDto> createRoomType(
             @PathVariable Long hotelId,
             @Valid @RequestBody RoomTypeRequestDto request
@@ -109,6 +120,10 @@ public class RoomTypeController {
 
     @GetMapping("/api/room-types/{id}")
     @Operation(summary = "Get a room type by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Room type details"),
+            @ApiResponse(responseCode = "404", description = "Room type not found")
+    })
     public ResponseEntity<RoomTypeResponseDto> getRoomType(@PathVariable Long id) {
         RoomType room = roomTypeService.getRoomType(id)
                 .orElseThrow(() -> new RoomTypeNotFoundException("Room type not found with id: " + id));
@@ -126,5 +141,23 @@ public class RoomTypeController {
     public ResponseEntity<Void> deleteRoomType(@PathVariable Long id) {
         roomTypeService.deleteRoomType(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/api/room-types/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload or replace room type main image")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Room type image uploaded successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid or missing image file"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Room type not found"),
+            @ApiResponse(responseCode = "415", description = "Unsupported media type")
+    })
+    public ResponseEntity<RoomTypeResponseDto> uploadRoomTypeImage(
+            @PathVariable Long id,
+            @Parameter(description = "Image file to upload", required = true)
+            @RequestPart("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(roomTypeService.uploadRoomTypeImage(id, file));
     }
 }

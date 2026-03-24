@@ -4,11 +4,15 @@ import com.example.hotalproject.HotelCatalog.hotel.Hotel;
 import com.example.hotalproject.HotelCatalog.hotel.HotelRepository;
 import com.example.hotalproject.HotelCatalog.roomType.RoomType;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
+import com.example.hotalproject.security.AppUser;
+import com.example.hotalproject.security.AppUserRepository;
+import com.example.hotalproject.security.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,8 +22,29 @@ public class loadData {
     private static final Logger log = LoggerFactory.getLogger(loadData.class);
     @Bean
     CommandLineRunner seedData(HotelRepository hotelRepository,
-                               RoomTypeRepository roomTypeRepository) {
+                               RoomTypeRepository roomTypeRepository,
+                               AppUserRepository appUserRepository,
+                               PasswordEncoder passwordEncoder) {
         return args -> {
+
+            if (appUserRepository.count() == 0) {
+                appUserRepository.save(AppUser.builder()
+                        .email("admin@hotel.local")
+                        .password(passwordEncoder.encode("Admin@123"))
+                        .role(Role.ADMIN)
+                        .build());
+                appUserRepository.save(AppUser.builder()
+                        .email("manager1@gmail.com")
+                        .password(passwordEncoder.encode("Manager@123"))
+                        .role(Role.MANAGER)
+                        .build());
+                appUserRepository.save(AppUser.builder()
+                        .email("guest@hotel.local")
+                        .password(passwordEncoder.encode("Guest@123"))
+                        .role(Role.GUEST)
+                        .build());
+                log.info("Seeded demo users (admin/manager/guest).");
+            }
 
             if (hotelRepository.count() > 0) return;
 
@@ -34,7 +59,7 @@ public class loadData {
                 String city = cities[random.nextInt(cities.length)];
                 String type = hotelTypes[random.nextInt(hotelTypes.length)];
 
-                // إنشاء Hotel
+
                 Hotel hotel = Hotel.builder()
                         .name(city + " " + type + " Hotel")
                         .city(city)
@@ -45,13 +70,13 @@ public class loadData {
 
                 hotelRepository.save(hotel);
 
-                // إنشاء RoomTypes لكل فندق
+
                 for (int j = 0; j < 3; j++) {
 
                     String roomName = roomNames[random.nextInt(roomNames.length)];
 
                     RoomType roomType = RoomType.builder()
-                            .hotel(hotel) // الربط المهم 🔥
+                            .hotel(hotel)
                             .name(roomName)
                             .capacity(1 + random.nextInt(4))
                             .basePrice(BigDecimal.valueOf(50 + random.nextInt(200)))

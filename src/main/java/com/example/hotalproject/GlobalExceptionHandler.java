@@ -1,13 +1,13 @@
 package com.example.hotalproject;
 
-
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.*;
-
-import com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException;
 import com.example.hotalproject.HotelCatalog.availability.AvaliabilituyException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,80 +19,55 @@ import java.time.Instant;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(
-            ResourceNotFoundException ex,
-            HttpServletRequest request
-    ) {
-        ApiError body = new ApiError(
-                Instant.now().toString(),
-                HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    @ExceptionHandler({ResourseAlreadyExistException.class,ResourseAlreadyExsitInResourseException.class,ResourseHasNotResourseException.class,ResourseHasResourseException.class,ConflictException.class, AvaliabilituyException.class})
-    public ResponseEntity<ApiError> handleAlreadyExist(
-            RuntimeException ex,
-            HttpServletRequest request
-    ) {
-        ApiError body = new ApiError(
-                Instant.now().toString(),
-                HttpStatus.CONFLICT.value(),
-                HttpStatus.CONFLICT.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    @ExceptionHandler({
+            ResourseAlreadyExistException.class,
+            ResourseAlreadyExsitInResourseException.class,
+            ResourseHasNotResourseException.class,
+            ResourseHasResourseException.class,
+            ConflictException.class,
+            AvaliabilituyException.class,
+            SQLIntegrityConstraintViolationException.class
+    })
+    public ResponseEntity<ApiError> handleConflict(RuntimeException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> ValidationError(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request
-    ){
-        ApiError body = new ApiError(
-                Instant.now().toString(),
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                ex.getBindingResult().getAllErrors().stream().map(error ->error.getDefaultMessage()).reduce((x1,x2)->x1+" ; "+x2).orElse("Validation failed")
-                ,
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    public ResponseEntity<ApiError> handleValidationError(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        String message = ex.getBindingResult().getAllErrors().stream()
+                .map(error -> error.getDefaultMessage())
+                .reduce((x1, x2) -> x1 + " ; " + x2)
+                .orElse("Validation failed");
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
     }
+
     @ExceptionHandler(BusinessValidationException.class)
-    public ResponseEntity<ApiError> ValidationError(
-            BusinessValidationException ex,
-            HttpServletRequest request
-    ){
+    public ResponseEntity<ApiError> handleValidationError(BusinessValidationException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler({BadCredentialsException.class, AuthenticationException.class})
+    public ResponseEntity<ApiError> handleUnauthorized(RuntimeException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleForbidden(AccessDeniedException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    private ResponseEntity<ApiError> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
         ApiError body = new ApiError(
                 Instant.now().toString(),
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                ex.getMessage(),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
                 request.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        return ResponseEntity.status(status).body(body);
     }
-    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-    public ResponseEntity<ApiError> ValidationError(
-            SQLIntegrityConstraintViolationException ex,
-            HttpServletRequest request
-    ){        ApiError body = new ApiError(
-                Instant.now().toString(),
-                HttpStatus.CONFLICT.value(),
-                HttpStatus.CONFLICT.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
-    }
-
-
-
-
-
 }

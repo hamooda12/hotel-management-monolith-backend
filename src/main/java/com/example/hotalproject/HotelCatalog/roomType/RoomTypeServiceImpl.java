@@ -1,6 +1,7 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
 import com.example.hotalproject.HotelCatalog.hotel.*;
+import com.example.hotalproject.media.FileStorageService;
 import com.example.hotalproject.PagedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -8,9 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +22,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
     private final HotelRepository hotelRepository;
-    private final RoomTypeMapper roomTypeMapper;
+    private final FileStorageService fileStorageService;
 
     public RoomTypeResponseDto createRoomType(Long hotelId, RoomTypeRequestDto request) {
         Hotel hotel = hotelRepository.findById(hotelId)
@@ -104,6 +105,16 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Transactional(readOnly = true)
     public Optional<RoomType> getRoomType(Long id) {
         return roomTypeRepository.findById(id);
+    }
+
+    @Transactional
+    public RoomTypeResponseDto uploadRoomTypeImage(Long roomTypeId, MultipartFile file) {
+        RoomType roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException("RoomType", roomTypeId));
+        String imagePath = fileStorageService.storeRoomTypeImage(roomTypeId, file, roomType.getImageUrl());
+        roomType.setImageUrl(imagePath);
+        roomType = roomTypeRepository.save(roomType);
+        return RoomTypeMapper.toResponse(roomType);
     }
 }
 
