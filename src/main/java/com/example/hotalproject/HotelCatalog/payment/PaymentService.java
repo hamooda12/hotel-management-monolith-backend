@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -159,5 +160,13 @@ public class PaymentService {
                 .providerRef(payment.getProviderRef())
                 .createdAt(payment.getCreatedAt())
                 .build();
+    }
+    public   PaymentResponse getPayment(Long paymentId) {
+        Payment paymentResponse = paymentRepository.findById(paymentId).orElseThrow(()->new ResourceNotFoundException("There is no Payment "));
+        return  this.toResponse(paymentResponse);
+    }
+    public List<PaymentResponse> getPayments() {
+        List<Payment> payments = paymentRepository.findAll();
+        return  payments.stream().map(this::toResponse).toList();
     }
 }
