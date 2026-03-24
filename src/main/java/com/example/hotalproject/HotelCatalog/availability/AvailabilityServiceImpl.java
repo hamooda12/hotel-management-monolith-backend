@@ -83,15 +83,15 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     private void validateDates(LocalDate checkinDate, LocalDate checkoutDate) {
         if (checkinDate == null || checkoutDate == null) {
-            throw new IllegalArgumentException("checkinDate and checkoutDate are required");
+            throw new AvaliabilituyException("checkinDate and checkoutDate are required");
         }
 
         if (checkinDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("checkinDate cannot be in the past");
+            throw new AvaliabilituyException("checkinDate cannot be in the past");
         }
 
         if (!checkinDate.isBefore(checkoutDate)) {
-            throw new IllegalArgumentException("checkinDate must be before checkoutDate");
+            throw new AvaliabilituyException("checkinDate must be before checkoutDate");
         }
     }
 

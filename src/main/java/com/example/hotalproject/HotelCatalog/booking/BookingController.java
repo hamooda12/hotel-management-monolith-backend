@@ -37,11 +37,7 @@ public class BookingController {
 return  bookingService.getBookingWithRoomType(id);
     }
 
-    // Confirm booking -> CONFIRMED
-    @PatchMapping("/{bookingId}/confirm")
-    public BookingResponse confirmBooking(@PathVariable Long bookingId) {
-        return bookingService.confirmBooking(bookingId);
-    }
+
 
     // Cancel booking
     @PatchMapping("/{bookingId}/cancel")

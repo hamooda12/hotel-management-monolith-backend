@@ -4,6 +4,7 @@ package com.example.hotalproject;
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.*;
 
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException;
+import com.example.hotalproject.HotelCatalog.availability.AvaliabilituyException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
-    @ExceptionHandler({ResourseAlreadyExistException.class,ResourseAlreadyExsitInResourseException.class,ResourseHasNotResourseException.class,ResourseHasResourseException.class,ConflictException.class})
+    @ExceptionHandler({ResourseAlreadyExistException.class,ResourseAlreadyExsitInResourseException.class,ResourseHasNotResourseException.class,ResourseHasResourseException.class,ConflictException.class, AvaliabilituyException.class})
     public ResponseEntity<ApiError> handleAlreadyExist(
             RuntimeException ex,
             HttpServletRequest request
