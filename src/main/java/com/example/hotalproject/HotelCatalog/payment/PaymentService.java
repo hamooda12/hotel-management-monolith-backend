@@ -9,6 +9,7 @@ import com.example.hotalproject.HotelCatalog.notification.NotificationService;
 import com.example.hotalproject.HotelCatalog.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +26,10 @@ public class PaymentService {
     private final NotificationService notificationService;
 
     @Transactional
-    public PaymentResponse createPaymentIntent(PaymentIntentRequest request) {
+    public PaymentResponse createPaymentIntent(PaymentIntentRequest request, String requesterEmail, boolean privilegedUser) {
         Booking booking = bookingRepository.findById(request.getBookingId())
                 .orElseThrow(() -> new ResourceNotFoundException("Booking", request.getBookingId()));
+        ensureCanAccessBooking(booking, requesterEmail, privilegedUser);
 
         if (booking.getStatus() != BookingStatus.PENDING) {
             throw new ConflictException(
@@ -67,9 +69,10 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponse simulatePayment(Long paymentId, PaymentSimulateRequest request) {
+    public PaymentResponse simulatePayment(Long paymentId, PaymentSimulateRequest request, String requesterEmail, boolean privilegedUser) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId));
+        ensureCanAccessBooking(payment.getBooking(), requesterEmail, privilegedUser);
 
         if (payment.getStatus() != PaymentStatus.INITIATED) {
             throw new ConflictException(
@@ -120,9 +123,10 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponse refundPayment(Long paymentId) {
+    public PaymentResponse refundPayment(Long paymentId, String requesterEmail, boolean privilegedUser) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId));
+        ensureCanAccessBooking(payment.getBooking(), requesterEmail, privilegedUser);
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new ConflictException(
@@ -161,12 +165,22 @@ public class PaymentService {
                 .createdAt(payment.getCreatedAt())
                 .build();
     }
-    public   PaymentResponse getPayment(Long paymentId) {
+    public   PaymentResponse getPayment(Long paymentId, String requesterEmail, boolean privilegedUser) {
         Payment paymentResponse = paymentRepository.findById(paymentId).orElseThrow(()->new ResourceNotFoundException("There is no Payment "));
+        ensureCanAccessBooking(paymentResponse.getBooking(), requesterEmail, privilegedUser);
         return  this.toResponse(paymentResponse);
     }
-    public List<PaymentResponse> getPayments() {
+    public List<PaymentResponse> getPayments(String requesterEmail, boolean privilegedUser) {
         List<Payment> payments = paymentRepository.findAll();
-        return  payments.stream().map(this::toResponse).toList();
+        return payments.stream()
+                .filter(payment -> privilegedUser || payment.getBooking().getGuestEmail().equalsIgnoreCase(requesterEmail))
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private void ensureCanAccessBooking(Booking booking, String requesterEmail, boolean privilegedUser) {
+        if (!privilegedUser && !booking.getGuestEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new AccessDeniedException("You are not allowed to access this payment");
+        }
     }
 }

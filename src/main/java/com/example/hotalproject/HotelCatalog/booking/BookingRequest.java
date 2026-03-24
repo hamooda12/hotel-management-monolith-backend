@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class BookingRequest {
 
-    @NotBlank(message = "Guest email is required")
     @Email(message = "Guest email must be valid")
     private String guestEmail;
 

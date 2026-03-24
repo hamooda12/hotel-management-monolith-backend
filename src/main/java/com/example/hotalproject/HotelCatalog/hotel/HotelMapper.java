@@ -26,11 +26,11 @@ public class HotelMapper {
         hotel.setManagerEmail(request.getManagerEmail());
     }
 
-   static  public HotelResponseDto toResponse(Hotel hotel) {
+    static  public HotelResponseDto toResponse(Hotel hotel) {
         return toResponse(hotel, null);
     }
 
-   static  public HotelResponseDto toResponse(Hotel hotel, List<RoomTypeResponseDto> roomTypes) {
+    static  public HotelResponseDto toResponse(Hotel hotel, List<RoomTypeResponseDto> roomTypes) {
         return HotelResponseDto.builder()
                 .id(hotel.getId())
                 .name(hotel.getName())
@@ -38,6 +38,7 @@ public class HotelMapper {
                 .address(hotel.getAddress())
                 .description(hotel.getDescription())
                 .managerEmail(hotel.getManagerEmail())
+                .imageUrl(hotel.getImageUrl())
                 .createdAt(hotel.getCreatedAt())
                 .updatedAt(hotel.getUpdatedAt())
                 .roomTypes(roomTypes)

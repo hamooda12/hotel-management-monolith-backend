@@ -34,6 +34,7 @@ public class RoomTypeMapper {
                 .basePrice(roomType.getBasePrice())
                 .amenities(roomType.getAmenities())
                 .totalRooms(roomType.getTotalRooms())
+                .imageUrl(roomType.getImageUrl())
                 .build();
     }
 }
