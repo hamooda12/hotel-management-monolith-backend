@@ -80,7 +80,7 @@ public class HotelServiceImpl implements HotelService {
         Page<Hotel> page = hotelRepository.findAll(spec, pageable);
         List<HotelResponseDto> content = page.getContent()
                 .stream()
-                .map(e ->HotelMapper.toResponse(e,roomTypeRepository.findAll().stream().map(RoomTypeMapper::toResponse).toList()))
+                .map(e ->HotelMapper.toResponse(e,e.getRooms().stream().map(RoomTypeMapper::toResponse).toList()))
                 .toList();
         return PagedResponse.from(page, content);
 
