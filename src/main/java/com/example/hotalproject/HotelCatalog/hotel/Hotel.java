@@ -1,6 +1,7 @@
 package com.example.hotalproject.HotelCatalog.hotel;
 
 import com.example.hotalproject.HotelCatalog.roomType.RoomType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -47,6 +48,7 @@ public class Hotel {
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private List<RoomType> rooms = new ArrayList<>();
 
 }
