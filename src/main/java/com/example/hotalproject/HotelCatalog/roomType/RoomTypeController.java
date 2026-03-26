@@ -1,6 +1,10 @@
 package com.example.hotalproject.HotelCatalog.roomType;
 
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException;
+import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
+import com.example.hotalproject.HotelCatalog.hotel.Hotel;
+import com.example.hotalproject.HotelCatalog.hotel.HotelService;
+import com.example.hotalproject.HotelCatalog.hotel.HotelServiceImpl;
 import com.example.hotalproject.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +34,8 @@ import java.util.Set;
 public class RoomTypeController {
 
     private final RoomTypeServiceImpl roomTypeService;
+    private final HotelServiceImpl hotelService;
+
 
     @GetMapping("/api/room-types")
     @Operation(summary = "Browse room types with filters and pagination")
@@ -105,6 +111,7 @@ public class RoomTypeController {
             @PathVariable Long hotelId,
             @Valid @RequestBody RoomTypeRequestDto request
     ) {
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(roomTypeService.createRoomType(hotelId, request));
     }
@@ -133,6 +140,8 @@ public class RoomTypeController {
     @GetMapping("/api/hotels/{hotelId}/room-types")
     @Operation(summary = "Get all room types for a specific hotel")
     public ResponseEntity<List<RoomTypeResponseDto>> getRoomTypesByHotel(@PathVariable Long hotelId) {
+        Hotel hotel = hotelService.getHotelByHotelId(hotelId).orElseThrow(()->new ResourceNotFoundException("There is no hotel with id: " + hotelId));
+
         return ResponseEntity.ok(roomTypeService.getRoomTypesByHotel(hotelId));
     }
 

@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -97,6 +98,9 @@ public class HotelServiceImpl implements HotelService {
         hotel.setImageUrl(imagePath);
         hotel = hotelRepository.save(hotel);
         return HotelMapper.toResponse(hotel);
+    }
+    public Optional<Hotel> getHotelByHotelId(Long hotelId) {
+        return hotelRepository.findById(hotelId);
     }
 }
 
