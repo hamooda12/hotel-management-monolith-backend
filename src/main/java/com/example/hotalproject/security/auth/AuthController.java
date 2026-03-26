@@ -50,7 +50,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Validation error"),
             @ApiResponse(responseCode = "401", description = "Invalid/expired/revoked refresh token")
     })
-    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<refrechResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         return ResponseEntity.ok(authService.refresh(request));
     }
 
