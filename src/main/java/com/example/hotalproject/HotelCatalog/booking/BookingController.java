@@ -49,6 +49,7 @@ public class BookingController {
     public List<BookingResponse> getBookings() {
         return bookingService.getAllBookings();
     }
+
     @GetMapping("/room-types/{id}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")

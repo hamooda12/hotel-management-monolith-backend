@@ -166,7 +166,8 @@ public class PaymentService {
                 .build();
     }
     public   PaymentResponse getPayment(Long paymentId, String requesterEmail, boolean privilegedUser) {
-        Payment paymentResponse = paymentRepository.findById(paymentId).orElseThrow(()->new ResourceNotFoundException("There is no Payment "));
+        Payment paymentResponse = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId));
         ensureCanAccessBooking(paymentResponse.getBooking(), requesterEmail, privilegedUser);
         return  this.toResponse(paymentResponse);
     }

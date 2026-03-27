@@ -77,7 +77,7 @@ public class AuthService {
 
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(jwtService.getAccessTokenExpirationMs())
+                .expiresIn(jwtService.getRefreshTokenExpirationMs())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .build();
