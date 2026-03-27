@@ -17,12 +17,16 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
+    private static final String TOKEN_TYPE_CLAIM = "token_type";
+    private static final String ACCESS_TOKEN_TYPE = "access";
 
     @Value("${app.security.jwt.secret}")
     private String jwtSecret;
 
     @Value("${app.security.jwt.expiration-ms:86400000}")
     private long jwtExpirationMs;
+    @Value("${app.security.jwt.refresh-expiration-ms:604800000}")
+    private long jwtExpirationRefreshMs;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -36,16 +40,26 @@ public class JwtService {
     public String generateToken(AppUser user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().name());
+        claims.put(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE);
         return buildToken(claims, user.getUsername());
     }
 
     public long getAccessTokenExpirationMs() {
         return jwtExpirationMs;
     }
-
+public long getRefreshTokenExpirationMs() {
+        return jwtExpirationRefreshMs;
+    }
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        return username.equals(userDetails.getUsername())
+                && isAccessToken(token)
+                && !isTokenExpired(token);
+    }
+
+    private boolean isAccessToken(String token) {
+        String tokenType = extractClaim(token, claims -> claims.get(TOKEN_TYPE_CLAIM, String.class));
+        return ACCESS_TOKEN_TYPE.equals(tokenType);
     }
 
     private String buildToken(Map<String, Object> extraClaims, String username) {

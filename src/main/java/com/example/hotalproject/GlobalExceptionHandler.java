@@ -2,24 +2,31 @@ package com.example.hotalproject;
 
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.*;
 import com.example.hotalproject.HotelCatalog.availability.AvaliabilituyException;
+import com.example.hotalproject.HotelCatalog.booking.BookingException;
+import com.example.hotalproject.HotelCatalog.booking.RoomTypesWithoutBookings;
+import com.example.hotalproject.HotelCatalog.roomType.RoomTypeNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.Instant;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+    @ExceptionHandler({ResourceNotFoundException.class, RoomTypeNotFoundException.class})
+    public ResponseEntity<ApiError> handleNotFound(RuntimeException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
@@ -29,10 +36,10 @@ public class GlobalExceptionHandler {
             ResourseHasNotResourseException.class,
             ResourseHasResourseException.class,
             ConflictException.class,
-            AvaliabilituyException.class,
-            SQLIntegrityConstraintViolationException.class
+            SQLIntegrityConstraintViolationException.class,
+            RoomTypesWithoutBookings.class
     })
-    public ResponseEntity<ApiError> handleConflict(RuntimeException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleConflict(Exception ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
@@ -45,12 +52,20 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, message, request);
     }
 
-    @ExceptionHandler(BusinessValidationException.class)
-    public ResponseEntity<ApiError> handleValidationError(BusinessValidationException ex, HttpServletRequest request) {
+    @ExceptionHandler({
+            BusinessValidationException.class,
+            BookingException.class,
+            AvaliabilituyException.class,
+            ConstraintViolationException.class,
+            MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class,
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<ApiError> handleBadRequest(Exception ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler({BadCredentialsException.class, AuthenticationException.class})
+    @ExceptionHandler({BadCredentialsException.class, AuthenticationException.class, UsernameNotFoundException.class})
     public ResponseEntity<ApiError> handleUnauthorized(RuntimeException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
@@ -59,6 +74,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleForbidden(AccessDeniedException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
+
+
 
     private ResponseEntity<ApiError> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
         ApiError body = new ApiError(

@@ -8,6 +8,7 @@ import com.example.hotalproject.HotelCatalog.payment.PaymentRepository;
 import com.example.hotalproject.HotelCatalog.payment.PaymentStatus;
 import com.example.hotalproject.HotelCatalog.roomType.RoomType;
 import com.example.hotalproject.HotelCatalog.roomType.RoomTypeRepository;
+import com.example.hotalproject.security.AppUserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,6 +29,7 @@ public class BookingService {
     private final RoomTypeRepository roomTypeRepository;
     private  final PaymentRepository paymentRepository;
     private final NotificationService notificationService;
+    private final AppUserRepository appUserRepository;
     public BookingResponse getBooking(Long bookingId, String requesterEmail, boolean privilegedUser) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(()->new BookingException("Booking not found"));
         ensureCanAccessBooking(booking, requesterEmail, privilegedUser);
@@ -43,7 +45,11 @@ public class BookingService {
     }
     public List<BookingResponse> getBookingWithRoomType(Long  roomTypeId) {
         if(roomTypeRepository.findById(roomTypeId).isPresent()) {
-            return  bookingRepository.findAllByRoomTypeId(roomTypeId).stream().map(BookingMapper::toResponse).toList();
+            if(bookingRepository.findAllByRoomTypeId(roomTypeId).isEmpty())
+                throw  new RoomTypesWithoutBookings("THe room type with id " + roomTypeId + " is empty");
+            else {
+                return  bookingRepository.findAllByRoomTypeId(roomTypeId).stream().map(BookingMapper::toResponse).toList();
+            }
         }
         else {
             throw new ResourceNotFoundException("Room Type not found");
@@ -54,7 +60,7 @@ public class BookingService {
         validateBookingRequest(request, privilegedUser);
 
         RoomType roomType = roomTypeRepository.findById(request.getRoomTypeId())
-                .orElseThrow(() -> new BookingException("Room type not found with id: " + request.getRoomTypeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("RoomType", request.getRoomTypeId()));
 
         if (request.getGuests() > roomType.getCapacity()) {
             throw new BookingException("Number of guests exceeds room capacity");
@@ -102,7 +108,7 @@ public class BookingService {
 
     public BookingResponse confirmBooking(Long bookingId) {
         Booking booking = bookingRepository.findWithRoomTypeById(bookingId)
-                .orElseThrow(() -> new BookingException("Booking not found with id: " + bookingId));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking", bookingId));
 
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new BookingException("Cancelled booking cannot be confirmed");
@@ -137,7 +143,7 @@ public class BookingService {
 
     public BookingResponse cancelBooking(Long bookingId, String requesterEmail, boolean privilegedUser) {
         Booking booking = bookingRepository.findWithRoomTypeById(bookingId)
-                .orElseThrow(() -> new BookingException("Booking not found with id: " + bookingId));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking", bookingId));
         ensureCanAccessBooking(booking, requesterEmail, privilegedUser);
 
         if (booking.getStatus() == BookingStatus.CANCELLED) {
@@ -152,7 +158,8 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CANCELLED);
         Booking updated = bookingRepository.save(booking);
-        Payment payment=paymentRepository.findByBookingId(updated.getId()).orElseThrow(() -> new BookingException("Booking not found with id: " + updated.getId()));
+        Payment payment = paymentRepository.findByBookingId(updated.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for booking id: " + updated.getId()));
         payment.setStatus(PaymentStatus.REFUNDED);
         paymentRepository.save(payment);
         notificationService.send(
@@ -167,6 +174,11 @@ public class BookingService {
 
     @Transactional
     public List<BookingResponse> getGuestBookingHistory(String guestEmail) {
+        if(!appUserRepository.existsByEmail(guestEmail)) {
+            throw  new ResourceNotFoundException("There is no user with "+guestEmail);
+        }
+        if( bookingRepository.findByGuestEmailOrderByCreatedAtDesc(guestEmail).isEmpty())
+            throw new BookingException("No bookings found for " + guestEmail);
         return bookingRepository.findByGuestEmailOrderByCreatedAtDesc(guestEmail)
                 .stream()
                 .map(BookingMapper::toResponse)
