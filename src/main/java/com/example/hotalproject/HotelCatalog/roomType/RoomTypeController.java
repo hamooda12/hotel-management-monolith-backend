@@ -2,8 +2,6 @@ package com.example.hotalproject.HotelCatalog.roomType;
 
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.BusinessValidationException;
 import com.example.hotalproject.HotelCatalog.Utility.Exceptions.ResourceNotFoundException;
-import com.example.hotalproject.HotelCatalog.hotel.Hotel;
-import com.example.hotalproject.HotelCatalog.hotel.HotelService;
 import com.example.hotalproject.HotelCatalog.hotel.HotelServiceImpl;
 import com.example.hotalproject.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@RequestMapping("/api/room-types")
 @RequiredArgsConstructor
 @Tag(name = "Room Types", description = "Room type management")
 public class RoomTypeController {
@@ -37,7 +36,7 @@ public class RoomTypeController {
     private final HotelServiceImpl hotelService;
 
 
-    @GetMapping("/api/room-types")
+    @GetMapping
     @Operation(summary = "Browse room types with filters and pagination")
     public ResponseEntity<PagedResponse<RoomTypeResponseDto>> browseRoomTypes(
             @PageableDefault(size = 10)
@@ -99,7 +98,7 @@ public class RoomTypeController {
         );
     }
 
-    @PostMapping("/api/hotels/{hotelId}/room-types")
+    @PostMapping("/hotel/{hotelId}")
     @Operation(summary = "Create a new room type for a specific hotel")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Room type created"),
@@ -112,11 +111,11 @@ public class RoomTypeController {
             @Valid @RequestBody RoomTypeRequestDto request
     ) {
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(roomTypeService.createRoomType(hotelId, request));
+        RoomTypeResponseDto createdRoomType = roomTypeService.createRoomType(hotelId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRoomType);
     }
 
-    @PutMapping("/api/room-types/{id}")
+    @PutMapping("/{id}")
     @Operation(summary = "Update an existing room type")
     public ResponseEntity<RoomTypeResponseDto> updateRoomType(
             @PathVariable Long id,
@@ -125,7 +124,7 @@ public class RoomTypeController {
         return ResponseEntity.ok(roomTypeService.updateRoomType(id, request));
     }
 
-    @GetMapping("/api/room-types/{id}")
+    @GetMapping("/{id}")
     @Operation(summary = "Get a room type by ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Room type details"),
@@ -137,22 +136,23 @@ public class RoomTypeController {
         return ResponseEntity.ok(RoomTypeMapper.toResponse(room));
     }
 
-    @GetMapping("/api/hotels/{hotelId}/room-types")
+    @GetMapping("/hotel/{hotelId}")
     @Operation(summary = "Get all room types for a specific hotel")
     public ResponseEntity<List<RoomTypeResponseDto>> getRoomTypesByHotel(@PathVariable Long hotelId) {
-        Hotel hotel = hotelService.getHotelByHotelId(hotelId).orElseThrow(()->new ResourceNotFoundException("There is no hotel with id: " + hotelId));
+        hotelService.getHotelByHotelId(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no hotel with id: " + hotelId));
 
         return ResponseEntity.ok(roomTypeService.getRoomTypesByHotel(hotelId));
     }
 
-    @DeleteMapping("/api/room-types/{id}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Delete a room type")
     public ResponseEntity<Void> deleteRoomType(@PathVariable Long id) {
         roomTypeService.deleteRoomType(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(value = "/api/room-types/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Upload or replace room type main image")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Room type image uploaded successfully"),
