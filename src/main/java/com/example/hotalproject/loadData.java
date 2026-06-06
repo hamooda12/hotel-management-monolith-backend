@@ -43,7 +43,7 @@ public class loadData {
                         .password(passwordEncoder.encode("Guest@123"))
                         .role(Role.GUEST)
                         .build());
-                log.info("Seeded demo users (admin/manager/guest).");
+
             }
 
             if (hotelRepository.count() > 0) return;
