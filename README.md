@@ -15,6 +15,7 @@ Spring Boot REST API for managing a hotel booking platform. The system supports 
 - [Running Locally](#running-locally)
 - [Seed Data](#seed-data)
 - [API Documentation](#api-documentation)
+- [AWS Deployment And CI/CD Evidence](#aws-deployment-and-cicd-evidence)
 - [API Endpoints](#api-endpoints)
 - [Request Examples](#request-examples)
 - [Business Rules](#business-rules)
@@ -248,6 +249,111 @@ http://localhost:8080/api-docs
 ```
 
 The OpenAPI configuration includes bearer token support, so authenticated endpoints can be tested from Swagger UI after logging in.
+
+## AWS Deployment And CI/CD Evidence
+
+Deployment proof and screenshots are stored under:
+
+```text
+docs/deployment-evidence/
+```
+
+Evidence files:
+
+| Evidence | Path |
+| --- | --- |
+| CI/CD workflow proof | [`docs/deployment-evidence/CICD.docx`](docs/deployment-evidence/CICD.docx) |
+| ALB DNS and health check proof | [`docs/deployment-evidence/Project/Alb-dns&HealthCheck.docx`](docs/deployment-evidence/Project/Alb-dns&HealthCheck.docx) |
+| Deployment flow diagram | [`docs/deployment-evidence/Project/The Flow photo.png`](docs/deployment-evidence/Project/The%20Flow%20photo.png) |
+| CloudWatch evidence | `docs/deployment-evidence/Project/cloudWatch/` |
+| ECS evidence | `docs/deployment-evidence/Project/Ecs/` |
+| CRUD database screenshots | `docs/deployment-evidence/Project/CRUD Database/` |
+| Target group evidence | `docs/deployment-evidence/Project/target group/` |
+| Cost estimate | [`docs/deployment-evidence/Project/EstimateCost/cost Summery.docx`](docs/deployment-evidence/Project/EstimateCost/cost%20Summery.docx) |
+
+AWS deployment components documented in the evidence:
+
+- AWS Region: `us-east-1`.
+- Application Load Balancer for public access.
+- ECS/Fargate service for running the Spring Boot container.
+- ECR repository for storing Docker images.
+- RDS MySQL database.
+- Target group health checks.
+- CloudWatch logs and monitoring evidence.
+
+Documented ALB endpoint:
+
+```text
+http://hotel-booking-alb-1495766242.us-east-1.elb.amazonaws.com
+```
+
+Documented health check endpoint:
+
+```text
+http://hotel-booking-alb-1495766242.us-east-1.elb.amazonaws.com/actuator/health
+```
+
+The CI/CD proof describes a GitHub Actions workflow named `Deploy Spring Boot Monolith to ECS`.
+
+Pipeline flow:
+
+1. Run on pushes to the `main` branch.
+2. Start a MySQL 8.0 service container for tests.
+3. Set up JDK 21 with Maven caching.
+4. Run `mvn test`.
+5. Build the application JAR with `mvn -DskipTests package`.
+6. Configure AWS credentials from GitHub secrets.
+7. Login to Amazon ECR.
+8. Build and push a Docker image tagged with the Git commit SHA and `latest`.
+9. Render a new ECS task definition using the pushed image.
+10. Deploy the task definition to ECS and wait for service stability.
+11. Run a smoke test against the ALB health endpoint.
+
+Required GitHub Actions secrets:
+
+| Secret | Purpose |
+| --- | --- |
+| `AWS_ACCESS_KEY_ID` | AWS access key used by the deployment workflow. |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key used by the deployment workflow. |
+| `AWS_SESSION_TOKEN` | AWS session token, if temporary AWS credentials are used. |
+
+Required GitHub Actions variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `AWS_REGION` | AWS region, for example `us-east-1`. |
+| `ECR_REPOSITORY` | ECR repository name. |
+| `ECS_CLUSTER` | ECS cluster name. |
+| `ECS_SERVICE` | ECS service name. |
+| `ECS_TASK_DEFINITION` | ECS task definition file/path. |
+| `CONTAINER_NAME` | Container name inside the ECS task definition. |
+| `ALB_URL` | Public ALB URL used for smoke testing. |
+
+Cost estimate from the deployment evidence:
+
+| Item | Value |
+| --- | --- |
+| Region | `us-east-1` |
+| ECS task size | `0.25 vCPU`, `0.5 GB RAM` |
+| Number of tasks | `1` |
+| Running time | `24/7`, about `730 hours/month` |
+| Expected traffic | About `100 requests/day` |
+| Database | MySQL `db.t3.micro`, `20 GB`, Single-AZ |
+| Logs | About `1 GB/month` |
+| Estimated monthly cost | About `$87-88 USD/month` |
+
+Top cost drivers:
+
+- RDS MySQL.
+- Application Load Balancer.
+- ECS Fargate.
+
+Cost reduction ideas:
+
+- Use a smaller database option or stop the database when it is not needed.
+- Run ECS only during working hours instead of 24/7 for non-production environments.
+
+Proofreading note: the CI/CD proof text mentions a smoke test for `/api/health`, while the AWS deployment evidence documents `/actuator/health`. Keep the workflow smoke-test path aligned with the deployed health endpoint.
 
 ## API Endpoints
 
