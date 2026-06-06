@@ -159,9 +159,10 @@ spring.application.name=rest
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.datasource.url=jdbc:mysql://${MYSQL_HOST}:3306/hotel_watterson
-spring.datasource.username=${SPRING_DATASOURCE_PASSWORD}
-spring.datasource.password=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
 springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
 springdoc.api-docs.path=/api-docs
 app.security.jwt.secret=${JWT_SECRET}
 app.security.jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
@@ -171,15 +172,13 @@ spring.servlet.multipart.max-file-size=${MAX_UPLOAD_FILE_SIZE:5MB}
 spring.servlet.multipart.max-request-size=${MAX_UPLOAD_REQUEST_SIZE:5MB}
 ```
 
-Important configuration note: the current file reads the datasource username from `SPRING_DATASOURCE_PASSWORD` and the datasource password from `SPRING_DATASOURCE_USERNAME`. Set the environment variables according to the current file, or rename them in `application.properties` before running.
-
 Required environment variables:
 
 | Variable | Description |
 | --- | --- |
 | `MYSQL_HOST` | MySQL host, for example `localhost`. |
-| `SPRING_DATASOURCE_PASSWORD` | Currently used as the datasource username. |
-| `SPRING_DATASOURCE_USERNAME` | Currently used as the datasource password. |
+| `SPRING_DATASOURCE_USERNAME` | MySQL username. |
+| `SPRING_DATASOURCE_PASSWORD` | MySQL password. |
 | `JWT_SECRET` | Base64-safe JWT signing secret. |
 
 Optional environment variables:
@@ -210,8 +209,8 @@ PowerShell example:
 
 ```powershell
 $env:MYSQL_HOST="localhost"
-$env:SPRING_DATASOURCE_PASSWORD="root"
-$env:SPRING_DATASOURCE_USERNAME=""
+$env:SPRING_DATASOURCE_USERNAME="root"
+$env:SPRING_DATASOURCE_PASSWORD=""
 $env:JWT_SECRET="ZmFrZS1kZW1vLXNlY3JldC1mb3ItY291cnNlLXByb2plY3QtY2hhbmdlLW1lLWFzYXAtMTIzNDU2Nzg5"
 .\mvnw.cmd spring-boot:run
 ```
