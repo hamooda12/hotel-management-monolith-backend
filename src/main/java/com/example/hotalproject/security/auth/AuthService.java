@@ -26,7 +26,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
 
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("User already exists with email: " + request.getEmail());
         }
@@ -37,10 +37,9 @@ public class AuthService {
                 .role(request.getRole() == null ? Role.GUEST : request.getRole())
                 .build();
 
-        AppUser saved = userRepository.save(user);
-        refreshTokenService.revokeAllUserTokens(saved);
-        RefreshToken refreshToken = refreshTokenService.issueToken(saved);
-        return buildAuthResponse(saved, refreshToken.getToken());
+        userRepository.save(user);
+
+
     }
 
     @Transactional
@@ -82,6 +81,7 @@ public class AuthService {
                 .role(user.getRole())
                 .build();
     }
+
     private refrechResponse buildrefrechResponse(AppUser user, String refreshToken) {
         return refrechResponse.builder()
                 .accessToken(jwtService.generateToken(user))
