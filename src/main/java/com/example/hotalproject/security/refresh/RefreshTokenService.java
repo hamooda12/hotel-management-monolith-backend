@@ -41,8 +41,8 @@ public class RefreshTokenService {
         }
 
         if (current.getExpiryDate().isBefore(LocalDateTime.now())) {
-            current.setRevoked(true);
-            refreshTokenRepository.save(current);
+
+
             throw new BadCredentialsException("Refresh token is expired");
         }
 
