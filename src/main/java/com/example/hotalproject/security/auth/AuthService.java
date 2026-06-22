@@ -85,6 +85,7 @@ public class AuthService {
     private refrechResponse buildrefrechResponse(AppUser user, String refreshToken) {
         return refrechResponse.builder()
                 .accessToken(jwtService.generateToken(user))
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtService.getAccessTokenExpirationMs())
                 .email(user.getEmail())
