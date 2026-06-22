@@ -75,7 +75,7 @@ public class LoadData {
                         {"Tulkarm Elite Hotel", "Tulkarm", "Al-Quds Street, Tulkarm", "Clean modern stay with premium service.", "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa"},
                         {"Jenin Sky Hotel", "Jenin", "Downtown, Jenin", "Urban hotel for family and business stays.", "https://images.unsplash.com/photo-1568084680786-a84f91d1153c"},
                         {"Qalqilya Comfort Hotel", "Qalqilya", "Main Circle, Qalqilya", "Comfortable rooms at affordable prices.", "https://images.unsplash.com/photo-1602002418082-a4443e081dd1"},
-                        {"Gaza Palm Hotel", "Gaza", "Al-Rimal, Gaza", "Elegant stay with relaxing atmosphere.", "https://images.unsplash.com/photo-1501117716987-c8e1ecb21044"}
+                        {"Gaza Palm Hotel", "Gaza", "Al-Rimal, Gaza", "Elegant stay with relaxing atmosphere.", "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                 };
 
                 for (int i = 0; i < hotels.length; i++) {
