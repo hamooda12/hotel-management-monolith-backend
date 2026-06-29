@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class refrechResponse {
     private String accessToken;
-private String refreshToken;
+
     private String tokenType;
     private long expiresIn;
     private String email;
