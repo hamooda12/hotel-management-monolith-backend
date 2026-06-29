@@ -1,0 +1,258 @@
+# Hotel Management API – Postman Documentation
+
+# 1. Project Overview
+
+The Hotel Management API Postman workspace was created to simplify the development, testing, and documentation of the Hotel Management backend services. The collection contains all endpoints required for user authentication, hotel management, room management, and file uploads. Postman was used not only for sending HTTP requests, but also for organizing the API, managing authentication, automating testing, and exploring advanced API development features.
+
+---
+
+# 2. Workspace Structure
+
+A dedicated Postman workspace was created for the Hotel Management API project. Using a separate workspace keeps all project resources in one place and makes collaboration easier.
+
+The workspace contains:
+
+* Hotel Management API Collection
+* Environment variables
+* Request history
+* API documentation
+* Testing scripts
+
+Keeping everything inside a single workspace improves project organization and allows future team members to quickly understand the API structure.
+
+---
+
+# 3. Collection Organization
+
+The collection is organized according to the application's business features instead of HTTP methods. This makes navigation easier as the project grows.
+
+Current structure:
+
+```
+Authentication API Collection
+│
+├── Guest
+│   ├── Register User
+│   ├── Login
+│   ├── Get Access Token
+│   └── Logout
+│
+└── Admin
+
+Hotel
+│
+├── Create and Update Hotel
+│   ├── Create Hotel
+│   ├── Failed Create Hotel
+│   └── Update Hotel
+│
+├── Get Hotel
+│   ├── Browse Hotels
+│   └── Get Hotel by ID
+│
+├── Delete Hotel
+│
+├── Rooms
+│   └── Get Room
+│
+└── Upload Photo
+```
+
+Grouping requests into folders makes the collection easier to maintain and allows developers to locate endpoints quickly.
+
+---
+
+# 4. Environment Configuration
+
+Environment variables were created to avoid hardcoding values that may change between environments.
+
+The following variables are used:
+
+| Variable | Purpose                        |
+| -------- | ------------------------------ |
+| BASE_URL | Base URL of the backend server |
+| token    | JWT access token               |
+| hotelId  | Selected hotel identifier      |
+| roomId   | Selected room identifier       |
+
+Using environment variables allows switching between local and production servers without modifying individual requests.
+
+---
+
+# 5. Variable Strategy
+
+Different variable types were explored during the project.
+
+Environment Variables
+
+Used for values shared across the entire environment such as:
+
+* BASE_URL
+* token
+
+Collection Variables
+
+Used for values shared only within the collection.
+
+Local Variables
+
+Temporary variables created during request execution.
+
+Dynamic Variables
+
+Built-in Postman variables that generate random values when needed.
+
+Using variables significantly reduced duplicated values and simplified request maintenance.
+
+---
+
+# 6. Authentication (JWT Bearer)
+
+The application uses JWT Bearer Authentication.
+
+Authentication flow:
+
+1. User submits login credentials.
+2. The server validates the credentials.
+3. A JWT access token is returned.
+4. The token is stored in Postman.
+5. Protected endpoints automatically use the token in the Authorization header.
+
+Example:
+
+```
+Authorization: Bearer {{token}}
+```
+
+This approach allows authenticated requests without manually copying the token every time.
+
+---
+
+# 7. Features Implemented
+
+Several Postman features were implemented during the project.
+
+## Environment Variables
+
+Used to store reusable configuration values.
+
+## Authorization
+
+JWT Bearer authentication was configured for protected endpoints.
+
+## Request Organization
+
+Requests were grouped into logical folders based on application modules.
+
+## Examples
+
+Example responses were created to document expected API behavior.
+
+## Mock Server
+
+Mock responses were generated to simulate backend responses without requiring a running server.
+
+## Flows
+
+Basic Postman Flows were explored to automate request execution visually.
+
+## Visualizer
+
+The Visualizer feature was used to display JSON responses as formatted HTML tables inside Postman.
+
+## Code Generation
+
+Requests were converted into multiple programming languages including:
+
+* cURL
+* JavaScript
+* Python
+* Java
+* PHP
+
+This makes integration with client applications much faster.
+
+---
+
+# 8. Collaboration Features Explored
+
+The following collaboration capabilities were explored:
+
+* Workspace sharing
+* Collection sharing
+* Version history
+* Team collaboration
+* Collection export and import
+
+These features allow multiple developers to work on the same API efficiently.
+
+---
+
+# 9. Features Researched
+
+Additional Postman capabilities were researched to understand their practical use.
+
+These include:
+
+* Mock Servers
+* Monitors
+* Interceptor
+* Public Workspaces
+* OpenAPI / Swagger Import
+* Flows
+* Code Generation
+* Visualizer
+
+Although not all features were fully implemented, understanding them provides a solid foundation for future API projects.
+
+---
+
+# 10. Challenges Encountered
+
+Several challenges were encountered during development.
+
+* Configuring JWT authentication correctly.
+* Managing environment variables.
+* Handling HTTP 401 Unauthorized responses.
+* Organizing a growing collection.
+* Understanding Postman Flows.
+* Learning how Mock Servers work.
+* Converting JSON responses into HTML using the Visualizer.
+
+Each challenge improved understanding of API development and testing.
+
+---
+
+# 11. Lessons Learned
+
+This project demonstrated that Postman is much more than an API testing tool.
+
+Key lessons learned include:
+
+* Well-organized collections improve maintainability.
+* Variables eliminate duplicated configuration.
+* JWT authentication can be fully automated.
+* Documentation is an essential part of API development.
+* Visual testing improves response readability.
+* Mock Servers allow frontend development before backend completion.
+* Code Generation saves development time by producing ready-to-use client code.
+
+---
+
+# 12. Future Improvements
+
+Future improvements for this workspace include:
+
+* Integrating Swagger / OpenAPI documentation.
+* Adding automated test scripts for all endpoints.
+* Configuring Postman Monitors for health checks.
+* Building more advanced Flows.
+* Publishing public API documentation.
+* Integrating Newman with a CI/CD pipeline.
+* Expanding the collection to cover all remaining project modules.
+
+---
+
+# Conclusion
+
+The Hotel Management API Postman workspace provides a structured and maintainable environment for developing, testing, documenting, and exploring RESTful APIs. Throughout this project, numerous Postman features were implemented and evaluated, demonstrating how Postman supports the complete API lifecycle—from request creation and authentication to documentation, automation, and collaboration.
