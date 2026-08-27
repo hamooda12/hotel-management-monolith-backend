@@ -38,8 +38,6 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-
-
     }
 
     @Transactional
@@ -63,7 +61,7 @@ public class AuthService {
     @Transactional
     public refrechResponse refresh(RefreshTokenRequest request) {
         RefreshToken rotatedToken = refreshTokenService.verifyAndRotate(request.getRefreshToken());
-        return buildrefrechResponse(rotatedToken.getUser());
+        return buildrefrechResponse(rotatedToken.getUser(), rotatedToken.getToken());
     }
 
     @Transactional
@@ -73,7 +71,6 @@ public class AuthService {
 
     private AuthResponse buildAuthResponse(AppUser user, String refreshToken) {
         return AuthResponse.builder()
-
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtService.getRefreshTokenExpirationMs())
@@ -82,10 +79,10 @@ public class AuthService {
                 .build();
     }
 
-    private refrechResponse buildrefrechResponse(AppUser user) {
+    private refrechResponse buildrefrechResponse(AppUser user, String refreshToken) {
         return refrechResponse.builder()
                 .accessToken(jwtService.generateToken(user))
-
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtService.getAccessTokenExpirationMs())
                 .email(user.getEmail())
