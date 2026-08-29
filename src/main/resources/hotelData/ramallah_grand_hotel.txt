@@ -1,0 +1,10 @@
+Ramallah Grand Hotel (ID 1)
+
+City: Ramallah
+Address: Al-Irsal Street, Ramallah
+Description: Modern luxury stay in the heart of Ramallah.
+Manager: manager1@gmail.com
+Created: August 28, 2026 at 03:24
+Double (Room Type 1): Sleeps 1, 206 per night, 13 rooms available, with WiFi, TV, and AC.
+Double (Room Type 2): Sleeps 3, 189 per night, 12 rooms available, with WiFi, TV, and AC.
+Deluxe (Room Type 3): Sleeps 3, 82 per night, 6 rooms available, with WiFi, TV, and AC
