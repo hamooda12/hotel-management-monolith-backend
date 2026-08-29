@@ -130,6 +130,13 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-vector-store-qdrant</artifactId>
         </dependency>
+        <!-- ========================= -->
+        <!-- Spring AI  Advisors -->
+        <!-- ========================= -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-vector-store-advisor</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.ai</groupId>

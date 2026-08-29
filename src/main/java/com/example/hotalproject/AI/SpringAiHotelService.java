@@ -2,6 +2,7 @@ package com.example.hotalproject.AI;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.DocumentReader;
@@ -32,10 +33,10 @@ public class SpringAiHotelService implements HotelAIService {
     private Resource systemPromptTemplate;
 
     public SpringAiHotelService(
-            ChatClient.Builder chatClientBuilder,
+          ChatClient chatClient,
             HotelInformationService hotelInformationService, VectorStore vectorStore) {
 
-        this.chatClient = chatClientBuilder.build();
+        this.chatClient = chatClient;
         this.hotelInformationService = hotelInformationService;
         this.vectorStore = vectorStore;
     }
@@ -103,6 +104,9 @@ public class SpringAiHotelService implements HotelAIService {
 
         var relevantDocuments =
                 getRulesFor(question.hotelName(), question.question());
+        log.info("Hotel Information:\n{}", hotelInformation);
+        log.info("Relevant Documents:\n{}", relevantDocuments);
+        log.info("Question:\n{}", question.question());
 
         var responseEntity = chatClient.prompt()
 
@@ -115,6 +119,7 @@ public class SpringAiHotelService implements HotelAIService {
                 .user(userSpec -> userSpec
                         .text(questionPromptTemplate)
                         .param("question", question.question()))
+
 
                 .call()
 
