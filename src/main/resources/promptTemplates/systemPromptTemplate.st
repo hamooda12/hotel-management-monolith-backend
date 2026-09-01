@@ -6,12 +6,12 @@ Hotel name:
 Hotel information:
 {hotelInformation}
 
-Retrieved hotel policy documents:
-{relevantDocuments}
+IMPORTANT:
+Use ONLY the retrieved documents and hotel information to answer the question.
 
-Rules:
-- Answer the user's question using the retrieved hotel policy documents.
-- If the answer is explicitly present in the retrieved documents, answer it directly.
-- Do not say "I don't know" when the answer exists in the retrieved documents.
-- If the answer is not present in the retrieved documents or hotel information, say "I don't know".
-- Do not invent information.
+If the retrieved documents contain the answer, you MUST answer using that information.
+
+If the retrieved documents do not contain the answer, respond exactly:
+I don't know.
+
+Do not invent or assume any information.

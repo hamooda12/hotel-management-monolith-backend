@@ -50,9 +50,9 @@
 
     <dependencies>
 
-        <!-- ========================= -->
-        <!-- Spring Boot -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
+        <!-- SPRING BOOT -->
+        <!-- ================================================= -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -80,9 +80,9 @@
         </dependency>
 
 
-        <!-- ========================= -->
-        <!-- PostgreSQL -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
+        <!-- DATABASE -->
+        <!-- ================================================= -->
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -91,9 +91,9 @@
         </dependency>
 
 
-        <!-- ========================= -->
-        <!-- SpringDoc / OpenAPI -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
+        <!-- SWAGGER -->
+        <!-- ================================================= -->
 
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -102,9 +102,9 @@
         </dependency>
 
 
-        <!-- ========================= -->
-        <!-- Lombok -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
+        <!-- LOMBOK -->
+        <!-- ================================================= -->
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -114,37 +114,50 @@
         </dependency>
 
 
-        <!-- ========================= -->
-        <!-- Spring AI -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
+        <!-- OPENAI -->
+        <!-- ================================================= -->
 
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-google-genai</artifactId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
 
-        <!-- ========================= -->
-        <!-- Spring AI Vector Store -->
-        <!-- ========================= -->
+
+        <!-- ================================================= -->
+        <!-- QDRANT -->
+        <!-- ================================================= -->
+
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-vector-store-qdrant</artifactId>
         </dependency>
-        <!-- ========================= -->
-        <!-- Spring AI  Advisors -->
-        <!-- ========================= -->
+
+
+        <!-- ================================================= -->
+        <!-- SPRING AI VECTOR STORE ADVISOR -->
+        <!-- ================================================= -->
+
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-vector-store-advisor</artifactId>
         </dependency>
 
+
+        <!-- ================================================= -->
+        <!-- SPRING AI RAG -->
+        <!-- ================================================= -->
+
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-google-genai-embedding</artifactId>
+            <artifactId>spring-ai-rag</artifactId>
         </dependency>
-        <!-- ========================= -->
-        <!-- Spring Docker -->
-        <!-- ========================= -->
+
+
+        <!-- ================================================= -->
+        <!-- DOCKER COMPOSE -->
+        <!-- ================================================= -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-docker-compose</artifactId>
@@ -154,9 +167,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-spring-boot-docker-compose</artifactId>
         </dependency>
-        <!-- ========================= -->
-        <!-- Testing -->
-        <!-- ========================= -->
+
+
+        <!-- ================================================= -->
+        <!-- TEST -->
+        <!-- ================================================= -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
