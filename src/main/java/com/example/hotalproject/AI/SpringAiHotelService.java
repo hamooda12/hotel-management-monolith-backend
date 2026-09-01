@@ -3,6 +3,8 @@ package com.example.hotalproject.AI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.metadata.Usage;
 
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
@@ -11,6 +13,7 @@ import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQuery
 import org.springframework.ai.rag.preretrieval.query.transformation.TranslationQueryTransformer;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ public class SpringAiHotelService implements HotelAIService {
     private final ChatClient chatClient;
     private final HotelInformationService hotelInformationService;
     private final VectorStore vectorStore;
+    private final ChatClient ragChatClient;
     @Value("classpath:/promptTemplates/questionPromptTemplate.st")
     private Resource questionPromptTemplate;
 
@@ -33,12 +37,13 @@ public class SpringAiHotelService implements HotelAIService {
     private Resource systemPromptTemplate;
 
     public SpringAiHotelService(
-          ChatClient chatClient,
-            HotelInformationService hotelInformationService, VectorStore vectorStore) {
+            ChatClient chatClient,
+            HotelInformationService hotelInformationService, VectorStore vectorStore, ChatClient ragChatClient) {
 
         this.chatClient = chatClient;
         this.hotelInformationService = hotelInformationService;
         this.vectorStore = vectorStore;
+        this.ragChatClient= ragChatClient;
     }
 
 
@@ -54,6 +59,11 @@ public class SpringAiHotelService implements HotelAIService {
         log.info("Hotel Information:\n{}", hotelInformation);
 
         log.info("Question:\n{}", question.question());
+        log.info("=================================");
+        log.info("hotelName      = {}", question.hotelName());
+        log.info("question       = {}", question.question());
+        log.info("conversationId = {}", question.conversationId());
+        log.info("=================================");
 
         var hotelMatch = String.format(
                 "hotelName == '%s'",
@@ -63,14 +73,13 @@ public class SpringAiHotelService implements HotelAIService {
 
                 .queryTransformers(
                         TranslationQueryTransformer.builder()
-                                .chatClientBuilder(chatClient.mutate())
+                                .chatClientBuilder(ragChatClient.mutate())
                                 .targetLanguage("English")
                                 .build(),
-
                         RewriteQueryTransformer.builder()
-                                .chatClientBuilder(chatClient.mutate())
-                                .build()
+                                .chatClientBuilder(ragChatClient.mutate())
 
+                                .build()
                 )
                 .documentRetriever(
                         VectorStoreDocumentRetriever.builder()
@@ -82,7 +91,22 @@ public class SpringAiHotelService implements HotelAIService {
 
 
                 .build();
+        var testResults = vectorStore.similaritySearch(
+                SearchRequest.builder()
+                        .query(question.question())
+                        .topK(6)
+                        .similarityThreshold(0.0)
+                        .build()
+        );
 
+        log.info("========== QDRANT TEST ==========");
+
+        for (var doc : testResults) {
+            log.info("CONTENT: {}", doc.getText());
+            log.info("METADATA: {}", doc.getMetadata());
+        }
+
+        log.info("=================================");
         var responseEntity = chatClient.prompt()
 
                 .system(systemSpec -> systemSpec
@@ -94,7 +118,13 @@ public class SpringAiHotelService implements HotelAIService {
                 .user(userSpec -> userSpec
                         .text(questionPromptTemplate)
                         .param("question", question.question()))
-                .advisors(advisor)
+                .advisors(advisorSpec -> advisorSpec
+                        .param(
+                                ChatMemory.CONVERSATION_ID,
+                                question.conversationId()
+                        )
+
+                ).advisors(advisor)
 
                 .call()
 
