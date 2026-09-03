@@ -18,10 +18,10 @@ public class HotelAiController {
     private final ChatClient chatClient;
 
 
-    public HotelAiController(ChatClient.Builder chatClientBuilder,
-                             HotelTools hotelTools) {
+    public HotelAiController(ChatClient.Builder chatClientBuilder
+                         ) {
         this.chatClient = chatClientBuilder
-                .defaultTools(hotelTools)
+
                 .build();
 
     }

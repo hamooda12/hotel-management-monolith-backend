@@ -34,12 +34,14 @@ public class AiConfig {
     @Bean
     ChatClient chatClient(
             ChatClient.Builder chatClientBuilder,
-            VectorStore vectorStore, ChatMemory chatMemory) {
+            VectorStore vectorStore, ChatMemory chatMemory
+    , HotelTools hotelTools
+    ) {
 
         return chatClientBuilder
             .defaultAdvisors(
                     MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                QuestionAnswerAdvisor.builder(vectorStore).build())
+                    QuestionAnswerAdvisor.builder(vectorStore).build()).defaultTools(hotelTools)
             .build();
     }
     @Bean
