@@ -1,6 +1,7 @@
 package com.example.hotalproject.AI;
-import org.springframework.ai.tool.ToolCallbackProvider;
 
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -31,12 +32,14 @@ public class AiConfig {
             System.out.println("================================");
         };
     }
+
     @Bean
     ChatMemory chatMemory() {
         return MessageWindowChatMemory.builder()
                 .maxMessages(20)
                 .build();
     }
+
     @Bean
     ChatMemoryRepository chatMemoryRepository(DataSource dataSource) {
         return JdbcChatMemoryRepository.builder()
@@ -48,20 +51,23 @@ public class AiConfig {
     @Bean
     ChatClient chatClient(
             ChatClient.Builder chatClientBuilder,
-            VectorStore vectorStore, ChatMemory chatMemory,
+            VectorStore vectorStore,
+            ChatMemory chatMemory,
             HotelTools hotelTools,
-            ToolCallbackProvider githubTools
+            ToolCallbackProvider githubTools,
+            ToolCallbackProvider hotelMcpTools
     ) {
 
         return chatClientBuilder
-            .defaultAdvisors(
-                    MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                    QuestionAnswerAdvisor.builder(vectorStore).build())
-            .defaultTools(hotelTools)
-            .defaultTools(githubTools)
-
-            .build();
+                .defaultAdvisors(
+                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
+                        QuestionAnswerAdvisor.builder(vectorStore).build())
+                .defaultTools(hotelTools)
+                .defaultTools(githubTools)
+                .defaultTools(hotelMcpTools)
+                .build();
     }
+
     @Bean
     CommandLineRunner checkGitHubToken() {
         return args -> {
@@ -73,6 +79,7 @@ public class AiConfig {
             System.out.println("========================================");
         };
     }
+
     @Bean
     ChatClient ragChatClient(ChatModel chatModel) {
         return ChatClient.builder(chatModel).build();
