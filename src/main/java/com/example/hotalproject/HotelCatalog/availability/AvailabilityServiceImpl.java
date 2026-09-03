@@ -112,4 +112,18 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
         return basePrice.multiply(multiplier).setScale(2, RoundingMode.HALF_UP);
     }
+    public String isAvailable(int roomTypeId, LocalDate checkinDate) {
+        int activeBookings = bookingRepository.countActiveBookingsForDate((long) roomTypeId, checkinDate);
+        RoomType roomType = roomTypeRepository.findById((long) roomTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException("RoomType", (long) roomTypeId));
+
+        int availableRoomsForDay = roomType.getTotalRooms() - activeBookings;
+
+        if (availableRoomsForDay > 0) {
+            return "Available";
+        } else {
+            return "Not Available";
+        }
+    }
+
 }
