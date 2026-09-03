@@ -95,6 +95,13 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- ================================================= -->
+        <!-- MCP CLIENT -->
+        <!-- ================================================= -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-client</artifactId>
+        </dependency>
 
         <!-- ================================================= -->
         <!-- DATABASE -->

@@ -1,4 +1,5 @@
 package com.example.hotalproject.AI;
+import org.springframework.ai.tool.ToolCallbackProvider;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -10,6 +11,7 @@ import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryReposito
 import org.springframework.ai.chat.memory.repository.jdbc.PostgresChatMemoryRepositoryDialect;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +19,18 @@ import javax.sql.DataSource;
 
 @Configuration
 public class AiConfig {
+    @Bean
+    CommandLineRunner checkMcpTools(ToolCallbackProvider toolCallbackProvider) {
+        return args -> {
+            System.out.println("========== MCP TOOLS ==========");
+
+            for (var tool : toolCallbackProvider.getToolCallbacks()) {
+                System.out.println("Tool: " + tool.getToolDefinition().name());
+            }
+
+            System.out.println("================================");
+        };
+    }
     @Bean
     ChatMemory chatMemory() {
         return MessageWindowChatMemory.builder()
@@ -35,7 +49,8 @@ public class AiConfig {
     ChatClient chatClient(
             ChatClient.Builder chatClientBuilder,
             VectorStore vectorStore, ChatMemory chatMemory,
-            HotelTools hotelTools
+            HotelTools hotelTools,
+            ToolCallbackProvider githubTools
     ) {
 
         return chatClientBuilder
@@ -43,8 +58,20 @@ public class AiConfig {
                     MessageChatMemoryAdvisor.builder(chatMemory).build(),
                     QuestionAnswerAdvisor.builder(vectorStore).build())
             .defaultTools(hotelTools)
+            .defaultTools(githubTools)
 
             .build();
+    }
+    @Bean
+    CommandLineRunner checkGitHubToken() {
+        return args -> {
+            String token = System.getenv("GITHUB_PERSONAL_ACCESS_TOKEN");
+
+            System.out.println("========== GITHUB TOKEN CHECK ==========");
+            System.out.println("Token exists: " + (token != null));
+            System.out.println("Token length: " + (token == null ? 0 : token.length()));
+            System.out.println("========================================");
+        };
     }
     @Bean
     ChatClient ragChatClient(ChatModel chatModel) {
