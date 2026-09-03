@@ -43,7 +43,7 @@ public class AiConfig {
                     MessageChatMemoryAdvisor.builder(chatMemory).build(),
                     QuestionAnswerAdvisor.builder(vectorStore).build())
             .defaultTools(hotelTools)
-            .defaultToolNames("hotelAvailabilityFunction")
+
             .build();
     }
     @Bean
