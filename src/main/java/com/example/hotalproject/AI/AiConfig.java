@@ -21,15 +21,27 @@ import javax.sql.DataSource;
 @Configuration
 public class AiConfig {
     @Bean
-    CommandLineRunner checkMcpTools(ToolCallbackProvider toolCallbackProvider) {
-        return args -> {
-            System.out.println("========== MCP TOOLS ==========");
+    CommandLineRunner checkMcpTools(
 
-            for (var tool : toolCallbackProvider.getToolCallbacks()) {
-                System.out.println("Tool: " + tool.getToolDefinition().name());
+            ToolCallbackProvider hotelMcpTools
+    ) {
+        return args -> {
+
+
+
+            System.out.println("===================================");
+
+
+            System.out.println("========== HOTEL MCP TOOLS ==========");
+
+            for (var tool : hotelMcpTools.getToolCallbacks()) {
+                System.out.println(
+                        "Hotel MCP Tool: " +
+                                tool.getToolDefinition().name()
+                );
             }
 
-            System.out.println("================================");
+            System.out.println("======================================");
         };
     }
 
@@ -53,8 +65,8 @@ public class AiConfig {
             ChatClient.Builder chatClientBuilder,
             VectorStore vectorStore,
             ChatMemory chatMemory,
-            HotelTools hotelTools,
-            ToolCallbackProvider githubTools,
+
+
             ToolCallbackProvider hotelMcpTools
     ) {
 
@@ -62,8 +74,8 @@ public class AiConfig {
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(),
                         QuestionAnswerAdvisor.builder(vectorStore).build())
-                .defaultTools(hotelTools)
-                .defaultTools(githubTools)
+
+
                 .defaultTools(hotelMcpTools)
                 .build();
     }
