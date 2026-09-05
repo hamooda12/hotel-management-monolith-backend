@@ -48,11 +48,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleDataIntegrityViolation(
             DataIntegrityViolationException ex,
             HttpServletRequest request) {
-        return buildResponse(
-                HttpStatus.CONFLICT,
-                "Cannot delete this resource because it is referenced by existing records. Please remove or handle the related records first.",
-                request
-        );
+        String message = ex.getMostSpecificCause() != null
+                ? ex.getMostSpecificCause().getMessage()
+                : ex.getMessage();
+        if (message == null || message.isBlank()) {
+            message = "Database constraint violation";
+        }
+        return buildResponse(HttpStatus.CONFLICT, message, request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
