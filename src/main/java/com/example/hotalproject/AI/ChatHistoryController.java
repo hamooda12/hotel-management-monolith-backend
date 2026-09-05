@@ -26,7 +26,7 @@ public class ChatHistoryController {
             @RequestParam String conversationId,
             Authentication authentication) {
 
-        String userConversationId = scopedConversationId(authentication.getName(), conversationId);
+        String userConversationId = authentication.getName() + ":" + conversationId;
         List<ChatMessage> messages = chatMemoryRepository.findByConversationId(userConversationId);
 
         return ResponseEntity.ok(
@@ -35,10 +35,6 @@ public class ChatHistoryController {
                                 message.getMessageType().getValue(),
                                 message.getText()))
                         .toList());
-    }
-
-    private String scopedConversationId(String username, String conversationId) {
-        return username + ":" + conversationId;
     }
 
     public record ChatHistoryMessage(String role, String content) {
