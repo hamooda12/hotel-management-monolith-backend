@@ -4,6 +4,7 @@ import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +38,22 @@ public class ChatHistoryController {
                                 message.getMessageType().getValue(),
                                 message.getText()))
                         .toList());
+    }
+
+    /**
+     * Permanently clears the persisted transcript for this conversation.
+     * The client-side conversation ID can then be reused as a fresh chat.
+     * Only the authenticated user's scoped conversation can be deleted.
+     */
+    @DeleteMapping("/history")
+    public ResponseEntity<Void> deleteHistory(
+            @RequestParam String conversationId,
+            Authentication authentication) {
+
+        String scopedId = scopedConversationId(authentication.getName(), conversationId);
+        chatMemoryRepository.deleteByConversationId(scopedId);
+
+        return ResponseEntity.noContent().build();
     }
 
     private String scopedConversationId(String username, String conversationId) {
