@@ -26,8 +26,14 @@ public class ChatHistoryController {
             @RequestParam String conversationId,
             Authentication authentication) {
 
-        String userConversationId = authentication.getName() + ":" + conversationId;
-        List<ChatMessage> messages = chatMemoryRepository.findByConversationId(userConversationId);
+        String scopedId = authentication.getName() + ":" + conversationId;
+        List<ChatMessage> messages = chatMemoryRepository.findByConversationId(scopedId);
+
+        // Backward compatibility for conversations created before user-scoped
+        // conversation IDs were introduced.
+        if (messages.isEmpty()) {
+            messages = chatMemoryRepository.findByConversationId(conversationId);
+        }
 
         return ResponseEntity.ok(
                 messages.stream()
