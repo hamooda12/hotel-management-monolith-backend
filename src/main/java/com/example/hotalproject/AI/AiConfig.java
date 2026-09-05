@@ -1,6 +1,5 @@
 package com.example.hotalproject.AI;
 
-import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -20,36 +19,19 @@ import javax.sql.DataSource;
 
 @Configuration
 public class AiConfig {
+
     @Bean
-    CommandLineRunner checkMcpTools(
-
-            ToolCallbackProvider hotelMcpTools
-    ) {
+    CommandLineRunner checkMcpTools(ToolCallbackProvider hotelMcpTools) {
         return args -> {
-
-
-
             System.out.println("===================================");
-
-
             System.out.println("========== HOTEL MCP TOOLS ==========");
 
             for (var tool : hotelMcpTools.getToolCallbacks()) {
-                System.out.println(
-                        "Hotel MCP Tool: " +
-                                tool.getToolDefinition().name()
-                );
+                System.out.println("Hotel MCP Tool: " + tool.getToolDefinition().name());
             }
 
             System.out.println("======================================");
         };
-    }
-
-    @Bean
-    ChatMemory chatMemory() {
-        return MessageWindowChatMemory.builder()
-                .maxMessages(20)
-                .build();
     }
 
     @Bean
@@ -61,26 +43,27 @@ public class AiConfig {
     }
 
     @Bean
+    ChatMemory chatMemory(ChatMemoryRepository chatMemoryRepository) {
+        return MessageWindowChatMemory.builder()
+                .chatMemoryRepository(chatMemoryRepository)
+                .maxMessages(20)
+                .build();
+    }
+
+    @Bean
     ChatClient chatClient(
             ChatClient.Builder chatClientBuilder,
             VectorStore vectorStore,
             ChatMemory chatMemory,
-
-
             ToolCallbackProvider hotelMcpTools
     ) {
-
         return chatClientBuilder
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(),
                         QuestionAnswerAdvisor.builder(vectorStore).build())
-
-
                 .defaultTools(hotelMcpTools)
                 .build();
     }
-
-
 
     @Bean
     ChatClient ragChatClient(ChatModel chatModel) {
