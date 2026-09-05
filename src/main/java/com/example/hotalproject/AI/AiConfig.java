@@ -80,17 +80,7 @@ public class AiConfig {
                 .build();
     }
 
-    @Bean
-    CommandLineRunner checkGitHubToken() {
-        return args -> {
-            String token = System.getenv("GITHUB_PERSONAL_ACCESS_TOKEN");
 
-            System.out.println("========== GITHUB TOKEN CHECK ==========");
-            System.out.println("Token exists: " + (token != null));
-            System.out.println("Token length: " + (token == null ? 0 : token.length()));
-            System.out.println("========================================");
-        };
-    }
 
     @Bean
     ChatClient ragChatClient(ChatModel chatModel) {
