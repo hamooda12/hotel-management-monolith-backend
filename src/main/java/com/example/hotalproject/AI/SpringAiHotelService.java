@@ -154,4 +154,28 @@ public class SpringAiHotelService implements HotelAIService {
                 usage.getNativeUsage()
         );
     }
+    @Override
+    public Answer askNormalQuestion(String Question) {
+
+        var responseEntity = chatClient.prompt()
+
+                .user(userSpec -> userSpec
+
+                        .text(Question)
+                )
+
+                .call()
+
+                .responseEntity(Answer.class);
+
+        var response = responseEntity.response();
+
+        assert response != null;
+
+        var metadata = response.getMetadata();
+
+        logUsage(metadata.getUsage());
+
+        return responseEntity.entity();
+    }
 }

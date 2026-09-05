@@ -22,4 +22,10 @@ public class AskController {
 
         return hotelAIService.askQuestion(question);
     }
+    @PostMapping("/ask/normal")
+    public Answer askNormal(
+            @RequestBody @Valid String question) {
+
+        return hotelAIService.askNormalQuestion(question);
+    }
 }
