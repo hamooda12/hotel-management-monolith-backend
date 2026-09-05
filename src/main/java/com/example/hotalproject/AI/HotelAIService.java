@@ -5,5 +5,5 @@ import reactor.core.publisher.Flux;
 
 public interface HotelAIService {
    Answer askQuestion(Question question);
-   Answer askNormalQuestion(String question);
+   Answer askNormalQuestion(Question question);
 }

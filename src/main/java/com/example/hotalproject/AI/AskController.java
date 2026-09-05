@@ -24,7 +24,7 @@ public class AskController {
     }
     @PostMapping("/ask/normal")
     public Answer askNormal(
-            @RequestBody @Valid String question) {
+            @RequestBody @Valid Question question) {
 
         return hotelAIService.askNormalQuestion(question);
     }

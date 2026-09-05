@@ -155,14 +155,22 @@ public class SpringAiHotelService implements HotelAIService {
         );
     }
     @Override
-    public Answer askNormalQuestion(String Question) {
+    public Answer askNormalQuestion(Question question) {
 
         var responseEntity = chatClient.prompt()
 
                 .user(userSpec -> userSpec
 
-                        .text(Question)
+                        .text(question.question())
+
+                )      .advisors(advisorSpec -> advisorSpec
+                .param(
+                        ChatMemory.CONVERSATION_ID,
+                        question.conversationId()
                 )
+                )
+
+
 
                 .call()
 
