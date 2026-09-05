@@ -71,9 +71,10 @@ public class AuthService {
 
     private AuthResponse buildAuthResponse(AppUser user, String refreshToken) {
         return AuthResponse.builder()
+                .accessToken(jwtService.generateToken(user))
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(jwtService.getRefreshTokenExpirationMs())
+                .expiresIn(jwtService.getAccessTokenExpirationMs())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .build();
