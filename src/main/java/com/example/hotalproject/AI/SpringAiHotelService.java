@@ -52,7 +52,10 @@ public class SpringAiHotelService implements HotelAIService {
                 .build();
 
         var responseEntity = chatClient.prompt()
-                .system(systemSpec -> systemSpec.text(systemPromptTemplate).param("hotelName", question.hotelName()).param("hotelInformation", hotelInformation))
+                .system(systemSpec -> systemSpec.text(systemPromptTemplate)
+                        .param("hotelName", question.hotelName())
+                        .param("hotelInformation", hotelInformation)
+                        .param("conversationId", question.conversationId()))
                 .user(userSpec -> userSpec.text(questionPromptTemplate).param("question", question.question()))
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, scopedConversationId(question.conversationId())))
                 .advisors(advisor)
@@ -70,7 +73,8 @@ public class SpringAiHotelService implements HotelAIService {
         var responseEntity = chatClient.prompt()
                 .system(systemSpec -> systemSpec.text(systemPromptTemplate)
                         .param("hotelName", question.hotelName() == null ? "" : question.hotelName())
-                        .param("hotelInformation", ""))
+                        .param("hotelInformation", "")
+                        .param("conversationId", question.conversationId()))
                 .user(userSpec -> userSpec.text(question.question()))
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, scopedConversationId(question.conversationId())))
                 .call()
