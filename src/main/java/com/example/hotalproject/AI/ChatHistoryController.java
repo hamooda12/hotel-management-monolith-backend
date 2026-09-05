@@ -1,7 +1,7 @@
 package com.example.hotalproject.AI;
 
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
-import org.springframework.ai.chat.memory.ChatMessage;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +27,7 @@ public class ChatHistoryController {
             Authentication authentication) {
 
         String scopedId = authentication.getName() + ":" + conversationId;
-        List<ChatMessage> messages = chatMemoryRepository.findByConversationId(scopedId);
+        List<Message> messages = chatMemoryRepository.findByConversationId(scopedId);
 
         // Backward compatibility for conversations created before user-scoped
         // conversation IDs were introduced.
