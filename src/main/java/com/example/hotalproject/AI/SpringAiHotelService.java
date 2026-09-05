@@ -159,18 +159,25 @@ public class SpringAiHotelService implements HotelAIService {
 
         var responseEntity = chatClient.prompt()
 
+                .system(systemSpec -> systemSpec
+                        .text(systemPromptTemplate)
+                        .param("hotelName",
+                                question.hotelName() == null
+                                        ? ""
+                                        : question.hotelName())
+                        .param("hotelInformation", "")
+                )
+
                 .user(userSpec -> userSpec
-
                         .text(question.question())
-
-                )      .advisors(advisorSpec -> advisorSpec
-                .param(
-                        ChatMemory.CONVERSATION_ID,
-                        question.conversationId()
-                )
                 )
 
-
+                .advisors(advisorSpec -> advisorSpec
+                        .param(
+                                ChatMemory.CONVERSATION_ID,
+                                question.conversationId()
+                        )
+                )
 
                 .call()
 
@@ -180,9 +187,7 @@ public class SpringAiHotelService implements HotelAIService {
 
         assert response != null;
 
-        var metadata = response.getMetadata();
-
-        logUsage(metadata.getUsage());
+        logUsage(response.getMetadata().getUsage());
 
         return responseEntity.entity();
     }
