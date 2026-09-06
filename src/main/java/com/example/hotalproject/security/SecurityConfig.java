@@ -48,9 +48,7 @@ public class SecurityConfig {
                                 "/api-docs/**",
                         )
                         .permitAll().requestMatchers("/api/AI/**")
-.permitAll()
-                        
-                        .requestMatchers("/api/hotelAI/**")
+.permitAll().requestMatchers("/api/hotelAI/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hotels/**", "/api/room-types/**", "/uploads/**", "/actuator/health")
                         .permitAll()
