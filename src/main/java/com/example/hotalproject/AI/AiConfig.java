@@ -58,13 +58,16 @@ public class AiConfig {
     ChatClient chatClient(
             ChatClient.Builder chatClientBuilder,
             ChatMemory chatMemory,
-            ToolCallbackProvider hotelMcpTools,
-            ConversationSelectionTool conversationSelectionTool
+            ToolCallbackProvider hotelMcpTools
     ) {
         return chatClientBuilder
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .defaultTools(hotelMcpTools, conversationSelectionTool)
+                // MCP tools are already supplied by hotelMcpTools.
+                // Do not register ConversationSelectionTool separately here:
+                // it is part of the MCP provider and duplicate registration
+                // causes Spring AI to reject the tool set at request time.
+                .defaultTools(hotelMcpTools)
                 .build();
     }
 
