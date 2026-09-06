@@ -45,10 +45,11 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/api-docs/**")
-                        .permitAll()
-                        .requestMatchers("/api/AI/**")
-                        .authenticated()
+                                "/api-docs/**",
+                        )
+                        .permitAll().requestMatchers("/api/AI/**")
+.permitAll()
+                        
                         .requestMatchers("/api/hotelAI/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hotels/**", "/api/room-types/**", "/uploads/**", "/actuator/health")
