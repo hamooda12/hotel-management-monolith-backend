@@ -131,13 +131,24 @@ public class SpringAiHotelService implements HotelAIService {
     }
 
     private String scopedConversationId(String conversationId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-            throw new IllegalStateException("Authenticated user is required for AI conversation memory");
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String scope;
+
+        if (authentication == null ||
+                authentication.getName() == null ||
+                authentication.getName().isBlank() ||
+                "anonymousUser".equals(authentication.getName())) {
+
+            scope = "anonymous:" + conversationId;
+        } else {
+            scope = authentication.getName() + ":" + conversationId;
         }
 
-        String scope = authentication.getName() + ":" + conversationId;
-        return UUID.nameUUIDFromBytes(scope.getBytes(StandardCharsets.UTF_8)).toString();
+        return UUID.nameUUIDFromBytes(
+                scope.getBytes(StandardCharsets.UTF_8)
+        ).toString();
     }
 
     private String valueOrEmpty(Object value) {
