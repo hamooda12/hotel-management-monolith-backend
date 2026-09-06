@@ -29,6 +29,7 @@ public class SpringAiHotelService implements HotelAIService {
     private final VectorStore vectorStore;
     private final ChatClient ragChatClient;
     private final ChatMemoryRepository chatMemoryRepository;
+    private final ConversationSelectionState selectionState;
 
     @Value("classpath:/promptTemplates/questionPromptTemplate.st")
     private Resource questionPromptTemplate;
@@ -41,12 +42,14 @@ public class SpringAiHotelService implements HotelAIService {
             HotelInformationService hotelInformationService,
             VectorStore vectorStore,
             ChatClient ragChatClient,
-            ChatMemoryRepository chatMemoryRepository) {
+            ChatMemoryRepository chatMemoryRepository,
+            ConversationSelectionState selectionState) {
         this.chatClient = chatClient;
         this.hotelInformationService = hotelInformationService;
         this.vectorStore = vectorStore;
         this.ragChatClient = ragChatClient;
         this.chatMemoryRepository = chatMemoryRepository;
+        this.selectionState = selectionState;
     }
 
     @Override
@@ -63,7 +66,9 @@ public class SpringAiHotelService implements HotelAIService {
                 .system(systemSpec -> systemSpec.text(systemPromptTemplate)
                         .param("hotelName", question.hotelName())
                         .param("hotelInformation", hotelInformation)
-                        .param("conversationId", question.conversationId()))
+                        .param("conversationId", question.conversationId())
+                        .param("selectedHotelName", valueOrEmpty(selectionState.selectedHotelName(question.conversationId())))
+                        .param("selectedHotelId", valueOrEmpty(selectionState.selectedHotelId(question.conversationId()))))
                 .user(userSpec -> userSpec.text(questionPromptTemplate).param("question", question.question()))
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, scopedConversationId(question.conversationId())))
                 .advisors(advisor)
@@ -84,7 +89,10 @@ public class SpringAiHotelService implements HotelAIService {
                 .system(systemSpec -> systemSpec.text(systemPromptTemplate)
                         .param("hotelName", question.hotelName() == null ? "" : question.hotelName())
                         .param("hotelInformation", "")
-                        .param("conversationId", question.conversationId()))
+                        .param("conversationId", question.conversationId())
+                        .param("selectedHotelName", valueOrEmpty(selectionState.selectedHotelName(question.conversationId())))
+                        .param("selectedHotelId", valueOrEmpty(selectionState.selectedHotelId(question.conversationId()))
+                        ))
                 .user(userSpec -> userSpec.text(question.question()))
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, scopedConversationId(question.conversationId())))
                 .call()
@@ -117,7 +125,9 @@ public class SpringAiHotelService implements HotelAIService {
             return;
         }
 
-        chatMemoryRepository.deleteByConversationId(scopedConversationId(question.conversationId()));
+        String scopedId = scopedConversationId(question.conversationId());
+        chatMemoryRepository.deleteByConversationId(scopedId);
+        selectionState.clear(question.conversationId());
     }
 
     private String scopedConversationId(String conversationId) {
@@ -126,11 +136,12 @@ public class SpringAiHotelService implements HotelAIService {
             throw new IllegalStateException("Authenticated user is required for AI conversation memory");
         }
 
-        // Spring AI's JDBC chat-memory schema uses VARCHAR(36) for conversation_id.
-        // Hash the authenticated user + client conversation ID into a deterministic UUID
-        // so the value is exactly 36 characters while remaining user-scoped.
         String scope = authentication.getName() + ":" + conversationId;
         return UUID.nameUUIDFromBytes(scope.getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
+    private String valueOrEmpty(Object value) {
+        return value == null ? "" : String.valueOf(value);
     }
 
     private void logUsage(Usage usage) {
