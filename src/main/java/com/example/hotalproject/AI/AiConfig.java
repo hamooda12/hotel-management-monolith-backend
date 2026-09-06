@@ -3,7 +3,6 @@ package com.example.hotalproject.AI;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
@@ -35,6 +34,11 @@ public class AiConfig {
     }
 
     @Bean
+    ConversationSelectionState conversationSelectionState() {
+        return new ConversationSelectionState();
+    }
+
+    @Bean
     ChatMemoryRepository chatMemoryRepository(DataSource dataSource) {
         return JdbcChatMemoryRepository.builder()
                 .dialect(new PostgresChatMemoryRepositoryDialect())
@@ -53,15 +57,14 @@ public class AiConfig {
     @Bean
     ChatClient chatClient(
             ChatClient.Builder chatClientBuilder,
-            VectorStore vectorStore,
             ChatMemory chatMemory,
-            ToolCallbackProvider hotelMcpTools
+            ToolCallbackProvider hotelMcpTools,
+            ConversationSelectionTool conversationSelectionTool
     ) {
         return chatClientBuilder
                 .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                        QuestionAnswerAdvisor.builder(vectorStore).build())
-                .defaultTools(hotelMcpTools)
+                        MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .defaultTools(hotelMcpTools, conversationSelectionTool)
                 .build();
     }
 
